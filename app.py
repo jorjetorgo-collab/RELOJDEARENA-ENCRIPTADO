@@ -3,16 +3,16 @@ from datetime import datetime, timezone, timedelta, date
 from decimal import Decimal, getcontext
 import random
 
-# 1. CONFIGURACIÓN DE PRECISIÓN
+# --- CONFIGURACIÓN DE PRECISIÓN ---
 getcontext().prec = 150
 
-# 2. CONFIGURACIÓN DE PÁGINA (Debe ir al inicio)
+# --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Reloj de Tinta Seca", page_icon="⏳", layout="centered")
 
-# 3. VARIABLES DE ACCESO
+# --- VARIABLES DE ACCESO Y SEGURIDAD ---
 CLAVE_CORRECTA = "Nandino2026"
 
-# Extracción de la llave invisible de los Secretos
+# Extracción de la llave invisible de los Secretos de Streamlit Cloud
 try:
     if "ELI_KEY" in st.secrets:
         ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
@@ -21,13 +21,38 @@ try:
 except Exception:
     ELI_NUMBER_MASTER = None
 
-# 4. VERIFICACIÓN DE SEGURIDAD
+# Bloqueo de seguridad si no hay constante en el servidor
 if ELI_NUMBER_MASTER is None:
     st.error("❌ ERROR CRÍTICO: Constante de Fase no detectada.")
-    st.info("Configura 'ELI_KEY' en los secretos del servidor.")
+    st.info("El sistema requiere la configuración de 'ELI_KEY' en los secretos del servidor para operar.")
     st.stop()
 
-# 5. CLASE CORE
+# --- ESTÉTICA DEL TRAYECTOR ---
+st.markdown("""
+    <style>
+    .main { background-color: #f0f2f6; }
+    .poema-container {
+        border: 4px solid #1a5276;
+        padding: 40px;
+        border-radius: 25px;
+        background-color: #ffffff;
+        font-family: 'Courier New', Courier, monospace;
+        box-shadow: 15px 15px 35px rgba(0,0,0,0.2);
+        color: #1b2631;
+        line-height: 1.7;
+    }
+    .footer-data {
+        text-align: right; 
+        color: #5d6d7e; 
+        font-size: 0.9em;
+        margin-top: 25px;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- CLASE CORE: RELOJ DE TINTA SECA ---
 class RelojTinta:
     def __init__(self):
         self.M0 = [
@@ -63,11 +88,13 @@ class RelojTinta:
     def desordenar(self, mn, clave_fase_input):
         res = list(self.M0)
         clave_fase = Decimal(str(clave_fase_input))
+        
         if clave_fase != ELI_NUMBER_MASTER:
             ruido = Decimal(datetime.now().microsecond + 1)
             ajuste_fase = clave_fase * ruido
         else:
             ajuste_fase = clave_fase
+
         for i in range(len(res) - 1, 0, -1):
             seed_val = Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * ajuste_fase
             random.seed(str(seed_val))
@@ -77,22 +104,10 @@ class RelojTinta:
 
 reloj = RelojTinta()
 
-# 6. INTERFAZ DE AUTENTICACIÓN
+# --- VALIDACIÓN DE IDENTIDAD ---
 if 'autenticado' not in st.session_state:
     st.session_state['autenticado'] = False
 
 if not st.session_state['autenticado']:
-    st.title("⏳ Validación de Identidad")
-    pw = st.text_input("Clave de Acceso:", type="password")
-    if st.button("Acceder"):
-        if pw == CLAVE_CORRECTA:
-            st.session_state['autenticado'] = True
-            st.rerun()
-        else:
-            st.error("Acceso denegado.")
-    st.stop()
-
-# 7. PANEL DE CONTROL (SIDEBAR)
-st.sidebar.title("🛠️ Auditoría")
-fase_input = st.sidebar.number_input("Clave de Fase (Eli #)", format="%.8f", step=0.00000001, value=0.00000000)
-metodo =
+    st.title("⏳ Acceso al Trayector")
+    st.write("Se requiere validación de
