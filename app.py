@@ -8,19 +8,25 @@ getcontext().prec = 150
 # --- CONFIGURACIÓN DE ACCESO ---
 CLAVE_CORRECTA = "Nandino2026"
 
-# LLAVE MAESTRA INVISIBLE:
-# El número ya no reside aquí. Se extrae de los secretos del servidor.
+# Intentamos extraer la llave de los Secretos de Streamlit
+# Si no existe, usamos None para manejar el error visualmente
 try:
-    ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
-except:
-    # Si no estás tú para configurar el secreto, el sistema usa un valor erróneo
-    ELI_NUMBER_MASTER = Decimal('0.00000000')
+    if "ELI_KEY" in st.secrets:
+        ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
+    else:
+        ELI_NUMBER_MASTER = None
+except Exception:
+    ELI_NUMBER_MASTER = None
 
 st.set_page_config(page_title="Reloj de Tinta Seca", page_icon="⏳", layout="centered")
 
-# ... (El resto del código de estética y la clase RelojTinta es IGUAL al anterior) ...
+# Si la llave no está configurada en el servidor, detenemos la ejecución con un mensaje claro
+if ELI_NUMBER_MASTER is None:
+    st.error("❌ ERROR CRÍTICO: Constante de Fase no encontrada en el servidor.")
+    st.info("El Teorema requiere la inyección del Coeficiente Eli para inicializar el sustrato.")
+    st.stop()
 
-# --- CLASE CORE (Misma lógica, pero usando la llave invisible) ---
+# --- CLASE CORE: RELOJ DE TINTA SECA ---
 class RelojTinta:
     def __init__(self):
         self.M0 = [
@@ -70,4 +76,14 @@ class RelojTinta:
             res[i], res[j] = res[j], res[i]
         return res
 
-# ... (El resto del código de Sidebars y Renderizado es IGUAL al anterior) ...
+reloj = RelojTinta()
+
+# --- INTERFAZ DE AUTENTICACIÓN ---
+if 'autenticado' not in st.session_state:
+    st.session_state['autenticado'] = False
+
+if not st.session_state['autenticado']:
+    st.title("⏳ Validación de Identidad")
+    pw = st.text_input("Clave de Acceso:", type="password")
+    if st.button("Acceder"):
+        if pw == CLAVE_CORRECTA:
