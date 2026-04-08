@@ -10,7 +10,6 @@ getcontext().prec = 150
 CLAVE_CORRECTA = "Nandino2026"
 
 # EL NÚMERO ELI (La única constante de fase)
-# Esta es la "Caja Negra". Sin este valor exacto, el sistema es puro azar.
 ELI_NUMBER_MASTER = Decimal('0.31052094')
 
 st.set_page_config(page_title="Reloj de Tinta Seca", page_icon="⏳", layout="centered")
@@ -93,13 +92,10 @@ class RelojTinta:
         res = list(self.M0)
         clave_fase = Decimal(str(clave_fase_input))
         
-        # --- LÓGICA DE LA CONSTANTE ELI ---
         if clave_fase != ELI_NUMBER_MASTER:
-            # Estado de Deriva: El resultado cambia cada microsegundo
             ruido = Decimal(datetime.now().microsecond + 1)
             ajuste_fase = clave_fase * ruido
         else:
-            # Estado de Cristalización: El Número Eli congela la permutación
             ajuste_fase = clave_fase
 
         for i in range(len(res) - 1, 0, -1):
@@ -115,8 +111,6 @@ reloj = RelojTinta()
 st.sidebar.title("🛠️ Auditoría Teórica")
 st.sidebar.markdown("---")
 
-# Única Casilla de Calibración
-st.sidebar.subheader("Sincronización de Fase")
 fase_input = st.sidebar.number_input("Clave de Fase (Eli #)", format="%.8f", step=0.00000001, value=0.00000000)
 
 metodo = st.sidebar.radio("Input de Reloj:", ["Número de Reloj (#)", "Coordenada Temporal"])
@@ -128,13 +122,11 @@ if metodo == "Coordenada Temporal":
     f = st.sidebar.date_input("Fecha", value=date(2026, 4, 16))
     h = st.sidebar.time_input("Hora (UTC)", step=60)
     ms = st.sidebar.number_input("μs", 0, 999999, 0)
-    
     dt_obj = datetime.combine(f, h).replace(tzinfo=timezone.utc, microsecond=ms)
     diff = dt_obj - reloj.T0
     u_total = (Decimal(diff.days) * Decimal('86400000000')) + \
               (Decimal(diff.seconds) * Decimal('1000000')) + \
               Decimal(diff.microseconds)
-    
     mn = int(u_total * reloj.E * (reloj.P ** 2)) if u_total >= 0 else 0
     label_tiempo = dt_obj.strftime('%d/%m/%Y | %H:%M:%S.%f')
 else:
@@ -170,4 +162,10 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # Indicadores de Auditoría
-if Decimal
+if Decimal(str(fase_input)) == ELI_NUMBER_MASTER:
+    st.sidebar.success("✔️ FASE ELIZABETH ESTABLE")
+else:
+    st.sidebar.warning("⚠️ SISTEMA EN DERIVA ENTRÓPICA")
+
+st.sidebar.markdown("---")
+st.sidebar.caption("Propiedad Intelectual de Jorge Torres. Teorema de la Identidad Informativa.")
