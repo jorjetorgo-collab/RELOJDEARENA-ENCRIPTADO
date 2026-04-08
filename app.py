@@ -7,8 +7,8 @@ import random
 getcontext().prec = 150
 
 # --- CONFIGURACIÓN DE ACCESO ---
+# Nota: En producción, usa st.secrets para CLAVE_CORRECTA y DELTA_PHI_REAL
 CLAVE_CORRECTA = "Nandino2026"
-# EL SECRETO DEL AUTOR (Diferencial de Fase)
 DELTA_PHI_REAL = Decimal('3.1415') 
 
 st.set_page_config(page_title="Reloj de Tinta Seca", page_icon="⏳", layout="centered")
@@ -80,28 +80,26 @@ class RelojTinta:
             "Un canto para cada desvelo de la luna, un soneto del amor que jamás se consuma",
             "Yo la amaba y no me importaba ser su puta, sin derechos ni disputas"
         ]
+        # Origen del Trayector (T0)
         self.T0 = datetime(2026, 4, 16, 0, 0, 0, tzinfo=timezone.utc)
         self.E = Decimal('2.71828182845904523536')
         self.P = Decimal('1.61803398874989484820')
 
     def desordenar(self, mn, diferencial):
         res = list(self.M0)
+        diferencial_dec = Decimal(str(diferencial))
         
         # --- LÓGICA DE CAJA NEGRA (Diferencial de Fase) ---
-        # Si el diferencial es incorrecto, inyectamos ruido temporal (inestabilidad)
-        if diferencial != DELTA_PHI_REAL:
-            # El ruido hace que el resultado cambie cada milisegundo aunque el # sea el mismo
-            ruido = Decimal(datetime.now().microsecond) 
-            ajuste_fase = diferencial * ruido
+        if diferencial_dec != DELTA_PHI_REAL:
+            # Si es incorrecto, el ruido cambia el resultado en cada ejecución
+            ruido = Decimal(datetime.now().microsecond + 1)
+            ajuste_fase = diferencial_dec * ruido
         else:
-            # Si es correcto (3.1415), el ajuste es una constante pura (estabilidad)
-            ajuste_fase = diferencial
+            # Si es correcto, el ajuste es constante y el resultado es determinista
+            ajuste_fase = diferencial_dec
 
         for i in range(len(res) - 1, 0, -1):
-            # La semilla ahora depende críticamente del ajuste_fase
             seed_val = Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * ajuste_fase
-            
-            # Usamos random con la semilla calculada para el Fisher-Yates
             random.seed(str(seed_val))
             j = random.randint(0, i)
             res[i], res[j] = res[j], res[i]
@@ -113,6 +111,25 @@ reloj = RelojTinta()
 st.title("⏳ Auditoría: Reloj de Tinta Seca")
 st.sidebar.header("Coordenadas Temporales")
 
-# NUEVA CASILLA: Diferencial de Fase (La Caja Negra)
-st.sidebar.subheader("Calibración Teórica")
-df_input = st.sidebar.number_input("Diferencial de Fase (ΔΦ)", format="%.4f", step=0.0001, help="Parámetro de estabilidad para el Teorema de Torres.")
+# Casilla de Diferencial de Fase
+st.sidebar.subheader("Calibración de Fase")
+df_input = st.sidebar.number_input("Diferencial de Fase (ΔΦ)", format="%.4f", step=0.0001, value=0.0000)
+
+opcion = st.sidebar.radio("Método de búsqueda:", ["Calendario (Límite 9999)", "Número Eterno (#)"])
+
+mn = 0
+label_tiempo = ""
+
+if opcion == "Calendario (Límite 9999)":
+    f = st.sidebar.date_input("Fecha del Trayector", value=date(2026, 4, 16))
+    h = st.sidebar.time_input("Hora Exacta (UTC)", step=60)
+    ms = st.sidebar.number_input("Microsegundos", 0, 999999, 0)
+    
+    dt_obj = datetime.combine(f, h).replace(tzinfo=timezone.utc, microsecond=ms)
+    diff = dt_obj - reloj.T0
+    
+    u_total = (Decimal(diff.days) * Decimal('86400000000')) + \
+              (Decimal(diff.seconds) * Decimal('1000000')) + \
+              Decimal(diff.microseconds)
+    
+    mn = int(u_total * reloj.E
