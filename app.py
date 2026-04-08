@@ -8,8 +8,7 @@ getcontext().prec = 150
 # --- CONFIGURACIÓN DE ACCESO ---
 CLAVE_CORRECTA = "Nandino2026"
 
-# Intentamos extraer la llave de los Secretos de Streamlit
-# Si no existe, usamos None para manejar el error visualmente
+# Extracción de la llave invisible de los Secretos de Streamlit
 try:
     if "ELI_KEY" in st.secrets:
         ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
@@ -20,10 +19,10 @@ except Exception:
 
 st.set_page_config(page_title="Reloj de Tinta Seca", page_icon="⏳", layout="centered")
 
-# Si la llave no está configurada en el servidor, detenemos la ejecución con un mensaje claro
+# Verificación de la presencia de la constante en el servidor
 if ELI_NUMBER_MASTER is None:
-    st.error("❌ ERROR CRÍTICO: Constante de Fase no encontrada en el servidor.")
-    st.info("El Teorema requiere la inyección del Coeficiente Eli para inicializar el sustrato.")
+    st.error("❌ ERROR CRÍTICO: Constante de Fase no detectada.")
+    st.info("El sistema requiere la configuración de 'ELI_KEY' en los secretos del servidor para operar.")
     st.stop()
 
 # --- CLASE CORE: RELOJ DE TINTA SECA ---
@@ -62,13 +61,11 @@ class RelojTinta:
     def desordenar(self, mn, clave_fase_input):
         res = list(self.M0)
         clave_fase = Decimal(str(clave_fase_input))
-        
         if clave_fase != ELI_NUMBER_MASTER:
             ruido = Decimal(datetime.now().microsecond + 1)
             ajuste_fase = clave_fase * ruido
         else:
             ajuste_fase = clave_fase
-
         for i in range(len(res) - 1, 0, -1):
             seed_val = Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * ajuste_fase
             random.seed(str(seed_val))
@@ -87,3 +84,50 @@ if not st.session_state['autenticado']:
     pw = st.text_input("Clave de Acceso:", type="password")
     if st.button("Acceder"):
         if pw == CLAVE_CORRECTA:
+            st.session_state['autenticado'] = True
+            st.rerun()
+        else:
+            st.error("Acceso denegado.")
+    st.stop()
+
+# --- PANEL DE CONTROL ---
+st.sidebar.title("🛠️ Auditoría")
+fase_input = st.sidebar.number_input("Clave de Fase (Eli #)", format="%.8f", step=0.00000001)
+metodo = st.sidebar.radio("Input de Reloj:", ["Número de Reloj (#)", "Coordenada Temporal"])
+
+mn = 0
+label_tiempo = ""
+
+if metodo == "Coordenada Temporal":
+    f = st.sidebar.date_input("Fecha", value=date(2026, 4, 16))
+    h = st.sidebar.time_input("Hora (UTC)", step=60)
+    ms = st.sidebar.number_input("μs", 0, 999999, 0)
+    dt_obj = datetime.combine(f, h).replace(tzinfo=timezone.utc, microsecond=ms)
+    diff = dt_obj - reloj.T0
+    u_total = (Decimal(diff.days) * Decimal('86400000000')) + \
+              (Decimal(diff.seconds) * Decimal('1000000')) + \
+              Decimal(diff.microseconds)
+    mn = int(u_total * reloj.E * (reloj.P ** 2)) if u_total >= 0 else 0
+    label_tiempo = dt_obj.strftime('%d/%m/%Y | %H:%M:%S.%f')
+else:
+    mn_in = st.sidebar.text_input("Reloj (#):", value="0")
+    try:
+        mn = int(mn_in.replace('#','').replace(',','').strip())
+    except:
+        mn = 0
+    u_calc = Decimal(mn) / (reloj.E * (reloj.P ** 2))
+    try:
+        dt_final = reloj.T0 + timedelta(microseconds=float(u_calc))
+        label_tiempo = dt_final.strftime('%d/%m/%Y | %H:%M:%S.%f')
+    except:
+        label_tiempo = "TRAYECTORIA INDEFINIDA"
+
+# --- RENDERIZADO ---
+st.title("⏳ El Reloj de Tinta Seca")
+
+if mn == 0 and metodo == "Número de Reloj (#)":
+    versos_finales = reloj.M0
+else:
+    versos_finales = reloj.desordenar(mn, fase_input)
+
+st
