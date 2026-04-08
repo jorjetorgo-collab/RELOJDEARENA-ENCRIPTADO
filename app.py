@@ -24,7 +24,7 @@ except Exception:
 # Bloqueo de seguridad si no hay constante en el servidor
 if ELI_NUMBER_MASTER is None:
     st.error("❌ ERROR CRÍTICO: Constante de Fase no detectada.")
-    st.info("El sistema requiere la configuración de 'ELI_KEY' en los secretos del servidor para operar.")
+    st.info("El sistema requiere la configuración de 'ELI_KEY' en los secretos del servidor.")
     st.stop()
 
 # --- ESTÉTICA DEL TRAYECTOR ---
@@ -88,13 +88,11 @@ class RelojTinta:
     def desordenar(self, mn, clave_fase_input):
         res = list(self.M0)
         clave_fase = Decimal(str(clave_fase_input))
-        
         if clave_fase != ELI_NUMBER_MASTER:
             ruido = Decimal(datetime.now().microsecond + 1)
             ajuste_fase = clave_fase * ruido
         else:
             ajuste_fase = clave_fase
-
         for i in range(len(res) - 1, 0, -1):
             seed_val = Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * ajuste_fase
             random.seed(str(seed_val))
@@ -110,4 +108,18 @@ if 'autenticado' not in st.session_state:
 
 if not st.session_state['autenticado']:
     st.title("⏳ Acceso al Trayector")
-    st.write("Se requiere validación de
+    st.write("Se requiere validación de autor para estabilizar la entropía.")
+    pw = st.text_input("Introduce la clave de acceso:", type="password")
+    if st.button("Validar Identidad"):
+        if pw == CLAVE_CORRECTA:
+            st.session_state['autenticado'] = True
+            st.rerun()
+        else:
+            st.error("Identidad no validada. Acceso denegado.")
+    st.stop()
+
+# --- PANEL DE CONTROL (SIDEBAR) ---
+st.sidebar.title("🛠️ Auditoría Teórica")
+st.sidebar.markdown("---")
+st.sidebar.subheader("Sincronización de Fase")
+fase_input = st.sidebar.number_input("Clave de Fase (Eli #)", format="%.8f
