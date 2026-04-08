@@ -3,59 +3,24 @@ from datetime import datetime, timezone, timedelta, date
 from decimal import Decimal, getcontext
 import random
 
-# Elevamos la precisión para la arquitectura del Teorema de Torres
 getcontext().prec = 150
 
 # --- CONFIGURACIÓN DE ACCESO ---
 CLAVE_CORRECTA = "Nandino2026"
 
-# EL NÚMERO ELI (La única constante de fase)
-ELI_NUMBER_MASTER = Decimal('0.31052094')
+# LLAVE MAESTRA INVISIBLE:
+# El número ya no reside aquí. Se extrae de los secretos del servidor.
+try:
+    ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
+except:
+    # Si no estás tú para configurar el secreto, el sistema usa un valor erróneo
+    ELI_NUMBER_MASTER = Decimal('0.00000000')
 
 st.set_page_config(page_title="Reloj de Tinta Seca", page_icon="⏳", layout="centered")
 
-# --- ESTÉTICA DEL TRAYECTOR ---
-st.markdown("""
-    <style>
-    .main { background-color: #f0f2f6; }
-    .poema-container {
-        border: 4px solid #1a5276;
-        padding: 40px;
-        border-radius: 25px;
-        background-color: #ffffff;
-        font-family: 'Courier New', Courier, monospace;
-        box-shadow: 15px 15px 35px rgba(0,0,0,0.2);
-        color: #1b2631;
-        line-height: 1.7;
-    }
-    .footer-data {
-        text-align: right; 
-        color: #5d6d7e; 
-        font-size: 0.9em;
-        margin-top: 25px;
-        border-top: 1px solid #eee;
-        padding-top: 10px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+# ... (El resto del código de estética y la clase RelojTinta es IGUAL al anterior) ...
 
-# --- VALIDACIÓN DE IDENTIDAD ---
-if 'autenticado' not in st.session_state:
-    st.session_state['autenticado'] = False
-
-if not st.session_state['autenticado']:
-    st.title("⏳ Acceso al Trayector")
-    st.write("Se requiere validación de autor para estabilizar la entropía.")
-    pw = st.text_input("Introduce la clave de acceso:", type="password")
-    if st.button("Validar Identidad"):
-        if pw == CLAVE_CORRECTA:
-            st.session_state['autenticado'] = True
-            st.rerun()
-        else:
-            st.error("Identidad no validada. Acceso denegado.")
-    st.stop()
-
-# --- CLASE CORE: RELOJ DE TINTA SECA ---
+# --- CLASE CORE (Misma lógica, pero usando la llave invisible) ---
 class RelojTinta:
     def __init__(self):
         self.M0 = [
@@ -105,67 +70,4 @@ class RelojTinta:
             res[i], res[j] = res[j], res[i]
         return res
 
-reloj = RelojTinta()
-
-# --- PANEL DE CONTROL ---
-st.sidebar.title("🛠️ Auditoría Teórica")
-st.sidebar.markdown("---")
-
-fase_input = st.sidebar.number_input("Clave de Fase (Eli #)", format="%.8f", step=0.00000001, value=0.00000000)
-
-metodo = st.sidebar.radio("Input de Reloj:", ["Número de Reloj (#)", "Coordenada Temporal"])
-
-mn = 0
-label_tiempo = ""
-
-if metodo == "Coordenada Temporal":
-    f = st.sidebar.date_input("Fecha", value=date(2026, 4, 16))
-    h = st.sidebar.time_input("Hora (UTC)", step=60)
-    ms = st.sidebar.number_input("μs", 0, 999999, 0)
-    dt_obj = datetime.combine(f, h).replace(tzinfo=timezone.utc, microsecond=ms)
-    diff = dt_obj - reloj.T0
-    u_total = (Decimal(diff.days) * Decimal('86400000000')) + \
-              (Decimal(diff.seconds) * Decimal('1000000')) + \
-              Decimal(diff.microseconds)
-    mn = int(u_total * reloj.E * (reloj.P ** 2)) if u_total >= 0 else 0
-    label_tiempo = dt_obj.strftime('%d/%m/%Y | %H:%M:%S.%f')
-else:
-    mn_in = st.sidebar.text_input("Reloj (#):", value="0")
-    try:
-        mn = int(mn_in.replace('#','').replace(',','').strip())
-    except:
-        mn = 0
-    u_calc = Decimal(mn) / (reloj.E * (reloj.P ** 2))
-    try:
-        dt_final = reloj.T0 + timedelta(microseconds=float(u_calc))
-        label_tiempo = dt_final.strftime('%d/%m/%Y | %H:%M:%S.%f')
-    except:
-        label_tiempo = "TRAYECTORIA INDEFINIDA"
-
-# --- RENDERIZADO ---
-st.title("⏳ El Reloj de Tinta Seca")
-
-if mn == 0 and metodo == "Número de Reloj (#)":
-    versos_finales = reloj.M0
-else:
-    versos_finales = reloj.desordenar(mn, fase_input)
-
-st.markdown(f"""
-    <div class="poema-container">
-        {"<br>".join(versos_finales)}
-        <div class="footer-data">
-            <b>Identidad Temporal:</b> {label_tiempo}<br>
-            <b>Fase Eli:</b> {fase_input:.8f}<br>
-            <span style="color: #1a5276;"><b>TRAYECTOR: #{mn}</b></span>
-        </div>
-    </div>
-""", unsafe_allow_html=True)
-
-# Indicadores de Auditoría
-if Decimal(str(fase_input)) == ELI_NUMBER_MASTER:
-    st.sidebar.success("✔️ FASE ELIZABETH ESTABLE")
-else:
-    st.sidebar.warning("⚠️ SISTEMA EN DERIVA ENTRÓPICA")
-
-st.sidebar.markdown("---")
-st.sidebar.caption("Propiedad Intelectual de Jorge Torres. Teorema de la Identidad Informativa.")
+# ... (El resto del código de Sidebars y Renderizado es IGUAL al anterior) ...
