@@ -11,7 +11,10 @@ CLAVE_CORRECTA = "Nandino2026"
 
 # Carga de la Fase Eli
 try:
-    ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"]) if "ELI_KEY" in st.secrets else Decimal("0")
+    if "ELI_KEY" in st.secrets:
+        ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
+    else:
+        ELI_NUMBER_MASTER = Decimal("0")
 except:
     ELI_NUMBER_MASTER = Decimal("0")
 
@@ -31,7 +34,7 @@ class RelojTinta:
             "Estrella que guía en la bruma, la brújula que aparta las dudas, la que señala la ruta...",
             "La bruja del cuento que embruja a quien incauto su nombre conjura...",
             "La estela que veloz se fuga dejando heridas que no suturan...",
-            "La exquisita tortura de quien naufraga en su mirada y encuentra lujuria...",
+            "La exquisita tortura de quien naufragaga en su mirada y encuentra lujuria...",
             "Mancuerna de fosos, centellas gemelas que en el cosmos fulguran...",
             "Nada en el mundo está a su altura, ni el pulso de Miguel Ángel, ni la pluma de Neruda...",
             "No pregunten si el pecado valió la penuria, yo sería Sócrates si ella fuese cicuta...",
@@ -57,10 +60,25 @@ class RelojTinta:
 reloj = RelojTinta()
 
 # Gestión de Estado Nocturno
-if 'nocturno' not in st.session_state: st.session_state['nocturno'] = False
-if 'auth' not in st.session_state: st.session_state['auth'] = False
+if 'nocturno' not in st.session_state:
+    st.session_state['nocturno'] = False
+if 'auth' not in st.session_state:
+    st.session_state['auth'] = False
 
 # Paleta de colores
 if st.session_state['nocturno']:
     bg, txt, border, accent = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
-else
+else:
+    bg, txt, border, accent = "#FDFEFE", "#1B2631", "#1A5276", "#FF4B4B"
+
+# Estilos CSS Limpios
+st.markdown(f"""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
+html, body, [class*="st-"] {{
+    font-family: 'Courier Prime', monospace !important;
+    background-color: {bg} !important;
+    color: {txt} !important;
+}}
+.poema-box {{
+    border: 2px solid {border
