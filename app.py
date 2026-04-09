@@ -61,7 +61,7 @@ if 'auth' not in st.session_state: st.session_state['auth'] = False
 
 bg, txt, brd = ("#000000", "#FFFFFF", "#FF0000") if st.session_state['nocturno'] else ("#FDFEFE", "#1B2631", "#1A5276")
 
-# 4. CSS Maestro (Verificado sin cortes)
+# 4. CSS Maestro
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
@@ -105,28 +105,3 @@ if not st.session_state['auth']:
 # 6. Sidebar y Lógica de Sincronización
 with st.sidebar:
     st.markdown(f'<h2 style="color:{brd};">Hardware Trayector</h2>', unsafe_allow_html=True)
-    if st.button("🌓 Cambiar Modo"):
-        st.session_state['nocturno'] = not st.session_state['nocturno']
-        st.rerun()
-    st.markdown("---")
-    ver_ui = st.checkbox("🔽 Opciones", value=True)
-    
-    mn_final = 0
-    lbl_time = reloj.T0.strftime('%Y-%m-%d %H:%M:%S') + ".000000"
-
-    if ver_ui:
-        metodo = st.radio("Dimensión:", ("Reloj Temporal", "Identificador"))
-        if metodo == "Identificador":
-            mn_in = st.text_input("ID (Escribir número):", "")
-            if mn_in:
-                try: 
-                    mn_final = int(mn_in)
-                    u_rec = Decimal(mn_final) / (reloj.E * (reloj.P ** 2))
-                    seg_rec = float(u_rec / 1000000)
-                    dt_rec = reloj.T0 + timedelta(seconds=seg_rec)
-                    lbl_time = dt_rec.strftime('%Y-%m-%d %H:%M:%S') + f":{dt_rec.microsecond:06d}"
-                except: mn_final = 0
-        else:
-            f_in = st.text_input("Fecha (AAAA-MM-DD):", placeholder="Ej: 2026-04-16")
-            h_in = st.text_input("Hora (HH:MM:SS):", placeholder="Ej: 14:30:05")
-            ms = st.number_input("µs (Microsegundos):", 0, 999999,
