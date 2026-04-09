@@ -77,32 +77,3 @@ input {{
     border: 1px solid {brd} !important;
     color: {txt} !important;
 }}
-.poema-box {{
-    border: 2px solid {brd}; 
-    padding: 35px; 
-    border-radius: 10px;
-    background-color: {bg}; 
-    width: 95%; 
-    margin: auto; 
-    overflow-x: auto;
-    white-space: nowrap;
-}}
-hr {{ border-top: 1px solid {brd} !important; opacity: 0.5; }}
-</style>
-""", unsafe_allow_html=True)
-
-# 5. Autenticación
-if not st.session_state['auth']:
-    st.markdown('<h1 style="text-align:center;">Sincronización de Identidad</h1>', unsafe_allow_html=True)
-    pw = st.text_input("Clave de Acceso:", type="password")
-    if st.button("Validar Trayectoria"):
-        if pw == CLAVE_CORRECTA:
-            st.session_state['auth'] = True
-            st.rerun()
-        else: st.error("Identidad no reconocida.")
-    st.stop()
-
-# 6. Sidebar
-with st.sidebar:
-    st.markdown(f'<h2 style="color:{brd};">Hardware Trayector</h2>', unsafe_allow_html=True)
-    if st.button("🌓 Cambiar Modo"):
