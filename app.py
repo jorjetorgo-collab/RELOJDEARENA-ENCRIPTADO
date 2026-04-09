@@ -3,13 +3,13 @@ from datetime import datetime, timezone, date
 from decimal import Decimal, getcontext
 import random
 
-# 1. Configuración y Precisión
+# 1. Configuración de Precisión
 getcontext().prec = 150
 st.set_page_config(page_title="Reloj de Tinta Seca", layout="wide")
 
 CLAVE_CORRECTA = "Nandino2026"
 
-# 2. Carga de la Fase Eli (Secrets)
+# 2. Carga de la Fase Eli
 try:
     if "ELI_KEY" in st.secrets:
         ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
@@ -52,64 +52,4 @@ class RelojTinta:
     def desordenar(self, mn):
         res = list(self.M0)
         for i in range(len(res) - 1, 0, -1):
-            random.seed(str(Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * ELI_NUMBER_MASTER))
-            j = random.randint(0, i)
-            res[i], res[j] = res[j], res[i]
-        return res
-
-reloj = RelojTinta()
-
-# 3. Gestión de Estado
-if 'nocturno' not in st.session_state:
-    st.session_state['nocturno'] = False
-if 'auth' not in st.session_state:
-    st.session_state['auth'] = False
-
-# 4. Definición de Paleta (NECESARIO PARA LA SIDEBAR)
-if st.session_state['nocturno']:
-    bg, txt, border, accent = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
-else:
-    bg, txt, border, accent = "#FDFEFE", "#1B2631", "#1A5276", "#FF4B4B"
-
-# 5. Estilos CSS (Format)
-css_template = """
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
-html, body, [class*="st-"] {{
-    font-family: 'Courier Prime', monospace !important;
-    background-color: {0} !important;
-    color: {1} !important;
-}}
-.poema-box {{
-    border: 2px solid {2};
-    padding: 40px;
-    border-radius: 10px;
-    background-color: {0};
-    width: 92%;
-    margin: auto;
-    white-space: nowrap;
-    overflow: hidden;
-}}
-input[type="checkbox"], input[type="radio"] {{
-    accent-color: {3} !important;
-}}
-</style>
-"""
-st.markdown(css_template.format(bg, txt, border, accent), unsafe_allow_html=True)
-
-# 6. Autenticación
-if not st.session_state['auth']:
-    st.markdown('<h1 style="text-align:center;">Sincronización de Identidad</h1>', unsafe_allow_html=True)
-    pw = st.text_input("Clave:", type="password")
-    if st.button("Sincronizar"):
-        if pw == CLAVE_CORRECTA:
-            st.session_state['auth'] = True
-            st.rerun()
-        else:
-            st.error("Inconsistencia en los datos de entrada.")
-    st.stop()
-
-# 7. SIDEBAR (Hardware Trayector)
-with st.sidebar:
-    st.markdown(f'<h2 style="color:{border};">Hardware Trayector</h2>', unsafe_allow_html=True)
-    if st.button("🌓 Modo
+            random.seed(str(Decimal(str(mn + i))
