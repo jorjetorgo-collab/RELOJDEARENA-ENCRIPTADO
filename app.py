@@ -61,7 +61,7 @@ if 'auth' not in st.session_state: st.session_state['auth'] = False
 
 bg, txt, brd = ("#000000", "#FFFFFF", "#FF0000") if st.session_state['nocturno'] else ("#FDFEFE", "#1B2631", "#1A5276")
 
-# 4. CSS Maestro (Doble llave {{ }} para evitar SyntaxError en f-strings)
+# 4. CSS Maestro
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
@@ -93,4 +93,23 @@ hr {{ border-top: 1px solid {brd} !important; opacity: 0.5; }}
 
 # 5. Autenticación
 if not st.session_state['auth']:
-    st.markdown('<h1 style="text-align:center;">S
+    st.markdown('<h1 style="text-align:center;">Sincronización de Identidad</h1>', unsafe_allow_html=True)
+    pw = st.text_input("Clave de Acceso:", type="password")
+    if st.button("Validar Trayectoria"):
+        if pw == CLAVE_CORRECTA:
+            st.session_state['auth'] = True
+            st.rerun()
+        else: st.error("Identidad no reconocida.")
+    st.stop()
+
+# 6. Sidebar y Lógica de Sincronización
+with st.sidebar:
+    st.markdown(f'<h2 style="color:{brd};">Hardware Trayector</h2>', unsafe_allow_html=True)
+    if st.button("🌓 Cambiar Modo"):
+        st.session_state['nocturno'] = not st.session_state['nocturno']
+        st.rerun()
+    st.markdown("---")
+    ver_ui = st.checkbox("🔽 Opciones", value=True)
+    
+    mn_final = 0
+    lbl_time = reloj.T0.strftime('%Y-%m-%d %H:%M:%S') + ".0000
