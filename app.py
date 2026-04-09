@@ -61,7 +61,7 @@ if 'auth' not in st.session_state: st.session_state['auth'] = False
 
 bg, txt, brd = ("#000000", "#FFFFFF", "#FF0000") if st.session_state['nocturno'] else ("#FDFEFE", "#1B2631", "#1A5276")
 
-# 4. CSS Maestro (Verificado sin cortes)
+# 4. CSS Maestro (Garantiza visibilidad total)
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
@@ -149,7 +149,6 @@ st.markdown('<h1 style="text-align:center;">Reloj de Tinta Seca</h1>', unsafe_al
 versos = reloj.M0 if mn_final == 0 else reloj.desordenar(mn_final)
 poema_html = '<br>'.join(versos)
 
-# Pie de página con la etiqueta solicitada y formato intacto
 st.markdown(f"""
 <div class="poema-box">
     <div style="font-size: 0.88vw; line-height: 2.1;">{poema_html}</div>
