@@ -69,3 +69,23 @@ if 'auth' not in st.session_state:
 if st.session_state['nocturno']:
     bg, txt, border, accent = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
 else:
+    bg, txt, border, accent = "#FDFEFE", "#1B2631", "#1A5276", "#FF4B4B"
+
+# 5. CSS Aislado
+css_code = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
+html, body, [class*="st-"] {{
+    font-family: 'Courier Prime', monospace !important;
+    background-color: {0} !important;
+    color: {1} !important;
+}}
+.poema-box {{
+    border: 2px solid {2};
+    padding: 40px;
+    border-radius: 10px;
+    background-color: {0};
+    width: 92%;
+    margin: auto;
+    white-space: nowrap;
+    overflow
