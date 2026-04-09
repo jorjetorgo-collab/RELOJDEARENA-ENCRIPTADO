@@ -54,26 +54,3 @@ class RelojTinta:
         for i in range(len(res) - 1, 0, -1):
             random.seed(str(Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * ELI_NUMBER_MASTER))
             j = random.randint(0, i)
-            res[i], res[j] = res[j], res[i]
-        return res
-
-reloj = RelojTinta()
-
-# 3. Gestión de Estado
-if 'nocturno' not in st.session_state:
-    st.session_state['nocturno'] = False
-if 'auth' not in st.session_state:
-    st.session_state['auth'] = False
-
-# 4. Paleta de Colores Homologada
-if st.session_state['nocturno']:
-    bg, txt, border, accent = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
-else:
-    bg, txt, border, accent = "#FDFEFE", "#1B2631", "#1A5276", "#1A5276"
-
-# 5. CSS Homologado (Control total de fondo y tipografía)
-css_code = f"""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
-
-/* Homologación de fondos para cuerpo
