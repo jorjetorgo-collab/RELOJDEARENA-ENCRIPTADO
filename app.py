@@ -1,23 +1,74 @@
-# 4. CSS Maestro Corregido
+import streamlit as st
+from datetime import datetime, timezone, date, time
+from decimal import Decimal, getcontext
+import random
+
+# 1. Configuración de Precisión y Página
+getcontext().prec = 150
+st.set_page_config(page_title="Reloj de Tinta Seca", layout="wide")
+CLAVE_CORRECTA = "Nandino2026"
+
+# 2. Carga de la Fase Eli
+try:
+    ELI_NUMBER_MASTER = Decimal(st.secrets.get("ELI_KEY", "0"))
+except:
+    ELI_NUMBER_MASTER = Decimal("0")
+
+class RelojTinta:
+    def __init__(self):
+        self.M0 = [
+            "Con fuerza y bravura, con discreta amargura, porta una armadura que su alma tortura...",
+            "Con ternura usurpa el espacio que el dolor, sin ella con completa soltura ocupa...",
+            "Con tinta y sangre el dolor en su piel se tatúa, con aguja en su carne su pasión perpetúa...",
+            "De mirada gatuna que en sus ojos acuna lagunas de mieles oscuras...",
+            "Ella es la crisálida y yo la oruga, que en vez de alas prefería su cuna...",
+            "Ella que en su risa captura lo que los ojos censuran, lo que ante el alma no se oculta...",
+            "En sus labios se alojan las uvas, de donde el más fino vino obtiene dulzura...",
+            "Es cura de fatua cordura y cual sangre en mis venas circula, y por ellas la poesía continúa...",
+            "Es mía la culpa y la condena, no de ella, yo fui El Poeta, ella tan solo la Musa...",
+            "Es primavera que pulula con frescura, es otoño y hojas de ojos se derraman y mudan...",
+            "Estrella que guía en la bruma, la brújula que aparta las dudas, la que señala la ruta...",
+            "La bruja del cuento que embruja a quien incauto su nombre conjura...",
+            "La estela que veloz se fuga dejando heridas que no suturan...",
+            "La exquisita tortura de quien naufraga en su mirada y encuentra lujuria...",
+            "Mancuerna de fosos, centellas gemelas que en el cosmos fulguran...",
+            "Nada en el mundo está a su altura, ni el pulso de Miguel Ángel, ni la pluma de Neruda...",
+            "No pregunten si el pecado valió la penuria, yo sería Sócrates si ella fuese cicuta...",
+            "Por más que huya y se oculta, no hay fuga de lo que con fuego en el alma se incuba...",
+            "Si es baile es finura y estructura, áurea cuando es pintura, dura si se habla de literatura...",
+            "Si sus labios mi nombre murmuran, si algún día me conjura, que veloz mi alma a ella acuda...",
+            "Su rara realeza de heroica figura, divina belleza de humilde postura...",
+            "Sus pisadas tal vez sean diminutas, pero donde pisa los cielos se inmutan...",
+            "Un canto para cada desvelo de la luna, un soneto del amor que jamás se consuma...",
+            "Yo la amaba y no me importaba ser su puta, sin derechos ni disputas..."
+        ]
+        self.T0 = datetime(2026, 4, 16, 0, 0, 0, tzinfo=timezone.utc)
+        self.E, self.P = Decimal('2.7182818284'), Decimal('1.6180339887')
+
+reloj = RelojTinta()
+
+# 3. Gestión de Estado y Colores
+if 'nocturno' not in st.session_state: st.session_state['nocturno'] = False
+if 'auth' not in st.session_state: st.session_state['auth'] = False
+
+bg, txt, brd = ("#000000", "#FFFFFF", "#FF0000") if st.session_state['nocturno'] else ("#FDFEFE", "#1B2631", "#1A5276")
+
+# 4. CSS Maestro (Con doble llave para evitar SyntaxError)
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
-
 [data-testid="stAppViewContainer"], [data-testid="stHeader"], [data-testid="stSidebar"], .stApp {{
     background-color: {bg} !important;
 }}
-
 html, body, [class*="st-"], h1, h2, h3, p, label, span, div, input, button {{
     font-family: 'Courier Prime', monospace !important;
     color: {txt} !important;
 }}
-
 input {{
     background-color: {bg} !important;
     border: 1px solid {brd} !important;
     color: {txt} !important;
 }}
-
 .poema-box {{
     border: 2px solid {brd}; 
     padding: 35px; 
@@ -28,18 +79,46 @@ input {{
     overflow-x: auto;
     white-space: nowrap;
 }}
-
-div[data-baseweb="radio"] div, div[data-baseweb="checkbox"] div {{ 
-    border-color: {brd} !important; 
-}}
-
-input[type="radio"]:checked + div {{ 
-    background-color: {brd} !important; 
-}}
-
-hr {{ 
-    border-top: 1px solid {brd} !important; 
-    opacity: 0.5; 
-}}
+div[data-baseweb="radio"] div, div[data-baseweb="checkbox"] div {{ border-color: {brd} !important; }}
+input[type="radio"]:checked + div {{ background-color: {brd} !important; }}
+hr {{ border-top: 1px solid {brd} !important; opacity: 0.5; }}
 </style>
 """, unsafe_allow_html=True)
+
+# 5. Autenticación
+if not st.session_state['auth']:
+    st.markdown('<h1 style="text-align:center;">Sincronización de Identidad</h1>', unsafe_allow_html=True)
+    pw = st.text_input("Clave de Acceso:", type="password")
+    if st.button("Validar Trayectoria"):
+        if pw == CLAVE_CORRECTA:
+            st.session_state['auth'] = True
+            st.rerun()
+        else: st.error("Identidad no reconocida.")
+    st.stop()
+
+# 6. Sidebar y Lógica de Tiempo
+with st.sidebar:
+    st.markdown(f'<h2 style="color:{brd};">Hardware Trayector</h2>', unsafe_allow_html=True)
+    if st.button("🌓 Cambiar Modo"):
+        st.session_state['nocturno'] = not st.session_state['nocturno']
+        st.rerun()
+    st.markdown("---")
+    ver_ui = st.checkbox("🔽 Opciones", value=True)
+    
+    # Valores Predeterminados (Punto Cero)
+    mn_final = 0
+    lbl_time = reloj.T0.strftime('%Y-%m-%d %H:%M:%S') + ".000000"
+
+    if ver_ui:
+        metodo = st.radio("Dimensión:", ("Reloj Temporal", "Identificador"))
+        if metodo == "Identificador":
+            mn_in = st.text_input("ID (Escribir número):", "")
+            if mn_in:
+                try: 
+                    mn_final = int(mn_in)
+                    lbl_time = f"Referencia por ID: {mn_final}"
+                except: 
+                    mn_final = 0
+        else:
+            f_in = st.text_input("Fecha (AAAA-MM-DD):", placeholder="2026-04-16")
+            h_in = st.text_input("Hora (HH:MM):
