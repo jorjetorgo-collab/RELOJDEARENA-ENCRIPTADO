@@ -1,11 +1,11 @@
 import streamlit as st
-from datetime import datetime, timezone, timedelta, date
+from datetime import datetime, timezone, date
 from decimal import Decimal, getcontext
 import random
 
 # Configuración de resolución infinitesimal
 getcontext().prec = 150
-st.set_page_config(page_title="Reloj de Tinta Seca", layout="centered")
+st.set_page_config(page_title="Reloj de Tinta Seca", layout="wide")
 
 CLAVE_CORRECTA = "Nandino2026"
 
@@ -56,16 +56,16 @@ class RelojTinta:
 
 reloj = RelojTinta()
 
-# Gestión de Colores y Modo Nocturno
+# Gestión de Modo Nocturno
 if 'nocturno' not in st.session_state: st.session_state['nocturno'] = False
 
-# Paleta
+# Colores
 if st.session_state['nocturno']:
-    bg, txt, border, accent = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
+    bg, txt, border = "#000000", "#FFFFFF", "#FF0000"
 else:
-    bg, txt, border, accent = "#FDFEFE", "#1B2631", "#1A5276", "#1A5276"
+    bg, txt, border = "#FDFEFE", "#1B2631", "#1A5276"
 
-# Inyección de CSS para forzar la tipografía en toda la app
+# Inyección de Estilo Final
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
@@ -75,16 +75,33 @@ st.markdown(f"""
         background-color: {bg} !important;
         color: {txt} !important;
     }}
-    .stTextInput>div>div>input {{ color: {txt} !important; font-family: 'Courier Prime' !important; }}
-    .stButton>button {{ border-color: {accent} !important; font-family: 'Courier Prime' !important; color: {txt} !important; }}
+    .stButton>button {{
+        width: 100%;
+        border-radius: 5px;
+        border: 1px solid {border};
+        background-color: {bg};
+        color: {txt};
+    }}
+    /* Forzar un solo renglón */
+    .poema-container {{
+        border: 2px solid {border};
+        padding: 30px;
+        border-radius: 5px;
+        background-color: {bg};
+        color: {txt};
+        width: 95%;
+        margin: auto;
+        white-space: nowrap;
+        overflow-x: hidden;
+    }}
     </style>
 """, unsafe_allow_html=True)
 
 # Autenticación
 if 'auth' not in st.session_state: st.session_state['auth'] = False
 if not st.session_state['auth']:
-    st.markdown(f'<h1 style="text-align:center; font-family:\'Courier Prime\'">Sincronización de Identidad</h1>', unsafe_allow_html=True)
-    pw = st.text_input("Clave de Acceso:", type="password")
+    st.markdown(f'<h1 style="text-align:center;">Sincronización de Identidad</h1>', unsafe_allow_html=True)
+    pw = st.text_input("Clave:", type="password")
     if st.button("Sincronizar"):
         if pw == CLAVE_CORRECTA:
             st.session_state['auth'] = True
@@ -92,18 +109,21 @@ if not st.session_state['auth']:
         else: st.error("Incertidumbre detectada.")
     st.stop()
 
-# --- BARRA LATERAL (Panel de Control) ---
+# --- BARRA LATERAL ---
 with st.sidebar:
-    st.markdown(f'<h3 style="color:{accent}">Panel del Trayector</h3>', unsafe_allow_html=True)
-    if st.button("🌓 Cambiar Modo"):
+    st.markdown(f'<h2 style="color:{border}">Hardware Trayector</h2>', unsafe_allow_html=True)
+    if st.button("🌓 Modo Nocturno"):
         st.session_state['nocturno'] = not st.session_state['nocturno']
         st.rerun()
     
     st.markdown("---")
-    metodo = st.radio("Modo de Búsqueda:", ["Poesía Continua #", "Reloj Temporal"])
+    st.write("Configuración de Búsqueda:")
+    # Botonera de Segmento (Simulada con radio de estilo botón)
+    metodo = st.radio("", ["Poesía Continua #", "Reloj Temporal"], label_visibility="collapsed")
     
     mn_final = 0
-    lbl_time = ""
+    now = datetime.now(timezone.utc)
+    lbl_time = now.strftime('%Y, %B, %d, %H:%M:%S:%f')[:-3]
 
     if metodo == "Reloj Temporal":
         f = st.date_input("Fecha", value=date(2026, 4, 16))
@@ -115,24 +135,22 @@ with st.sidebar:
         mn_final = int(u * reloj.E * (reloj.P ** 2))
         lbl_time = dt.strftime('%Y, %B, %d, %H:%M:%S') + f":{dt.microsecond:06d}"
     else:
-        mn_input = st.text_input("Poesía Continua #:", "0")
+        mn_input = st.text_input("ID de Identidad:", "0")
         try: mn_final = int(mn_input)
         except: mn_final = 0
-        lbl_time = "Sincronización Manual"
 
-# --- CUERPO PRINCIPAL ---
-st.markdown(f'<h1 style="text-align:center; font-family:\'Courier Prime\'; color:{txt}">Reloj de Tinta Seca</h1>', unsafe_allow_html=True)
+# --- CUERPO ---
+st.markdown(f'<h1 style="text-align:center;">Reloj de Tinta Seca</h1>', unsafe_allow_html=True)
 
 versos = reloj.M0 if mn_final == 0 else reloj.desordenar(mn_final)
 
-# Caja del Poema
 st.markdown(f"""
-<div style="border:2px solid {border}; padding:40px; border-radius:10px; background-color:{bg}; color:{txt}; font-family:'Courier Prime', monospace; margin-top:20px;">
-    <div style="font-size:1.1em; line-height:1.8; margin-bottom: 40px;">
+<div class="poema-container">
+    <div style="font-size: 0.95vw; line-height: 1.8; font-family: 'Courier Prime', monospace;">
         {'<br>'.join(versos)}
     </div>
-    <hr style="border:0.5px solid {border};">
-    <div style="text-align:right; font-size:0.9em; line-height:1.5; opacity:0.9;">
+    <hr style="border: 0.5px solid {border}; margin-top: 30px;">
+    <div style="text-align: right; font-size: 0.85em; opacity: 0.9;">
         {lbl_time}<br>
         Reloj de Tinta Seca: Poesía Continua #{mn_final}
     </div>
