@@ -59,14 +59,24 @@ class RelojTinta:
 
 reloj = RelojTinta()
 
-# Gestión de Estado Nocturno
 if 'nocturno' not in st.session_state:
     st.session_state['nocturno'] = False
 if 'auth' not in st.session_state:
     st.session_state['auth'] = False
 
-# Colores
+# --- AJUSTE DE COLORES (Línea 72 Corregida) ---
 if st.session_state['nocturno']:
     bg, txt, border, accent = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
 else:
-    bg, txt, border, accent = "#FDFEFE", "#1B2631", "#1A52
+    bg, txt, border, accent = "#FDFEFE", "#1B2631", "#1A5276", "#FF4B4B"
+
+# CSS con doble llave para evitar conflictos con f-strings
+st.markdown(f"""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
+html, body, [class*="st-"] {{
+    font-family: 'Courier Prime', monospace !important;
+    background-color: {bg} !important;
+    color: {txt} !important;
+}}
+.poema-box {{
