@@ -3,11 +3,13 @@ from datetime import datetime, timezone, timedelta, date
 from decimal import Decimal, getcontext
 import random
 
+# Configuración de resolución infinitesimal (Axioma Operativo I)
 getcontext().prec = 150
 st.set_page_config(page_title="Reloj de Tinta Seca", page_icon="⏳", layout="centered")
 
 CLAVE_CORRECTA = "Nandino2026"
 
+# Recuperación de la Fase Maestra (Invisible para el observador)
 try:
     if "ELI_KEY" in st.secrets:
         ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
@@ -17,11 +19,12 @@ except:
     ELI_NUMBER_MASTER = None
 
 if ELI_NUMBER_MASTER is None:
-    st.error("❌ ERROR: Falta ELI_KEY en Secretos.")
+    st.error("❌ ERROR CRÍTICO: El Trayector requiere la Fase Eli en Secretos.")
     st.stop()
 
 class RelojTinta:
     def __init__(self):
+        # Identidad Inicial (M0) - Estado de orden puro [cite: 5]
         self.M0 = [
             "Con fuerza y bravura, con discreta amargura, porta una armadura que su alma tortura",
             "Con ternura usurpa el espacio que el dolor, sin ella con completa soltura ocupa",
@@ -48,53 +51,95 @@ class RelojTinta:
             "Un canto para cada desvelo de la luna, un soneto del amor que jamás se consuma",
             "Yo la amaba y no me importaba ser su puta, sin derechos ni disputas"
         ]
+        # Horizonte del Trayector: 16 de Abril 2026
         self.T0 = datetime(2026, 4, 16, 0, 0, 0, tzinfo=timezone.utc)
         self.E, self.P = Decimal('2.7182818284'), Decimal('1.6180339887')
 
-    def desordenar(self, mn, clave):
+    def desordenar(self, mn, f_eli):
         res = list(self.M0)
-        c = Decimal(str(clave))
-        adj = c if c == ELI_NUMBER_MASTER else c * Decimal(datetime.now().microsecond + 1)
+        c = Decimal(str(f_eli))
+        
+        # Proceso de igualación: Si f_eli != Eli_Master, se inyecta entropía adicional [cite: 27, 28]
+        adj = c if c == ELI_NUMBER_MASTER else c * Decimal(random.random())
+        
         for i in range(len(res) - 1, 0, -1):
+            # Sumatoria integral del orden trayectorial [cite: 12]
             random.seed(str(Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * adj))
             j = random.randint(0, i)
             res[i], res[j] = res[j], res[i]
         return res
 
+# --- INTERFAZ ---
 reloj = RelojTinta()
 
 if 'auth' not in st.session_state: st.session_state['auth'] = False
 if not st.session_state['auth']:
-    st.title("⏳ Acceso")
-    pw = st.text_input("Clave:", type="password")
-    if st.button("Entrar"):
+    st.title("⏳ Acceso al Trayector")
+    pw = st.text_input("Clave de Seguridad:", type="password")
+    if st.button("Sincronizar"):
         if pw == CLAVE_CORRECTA:
             st.session_state['auth'] = True
             st.rerun()
-        else: st.error("Error")
+        else: st.error("Deficiencia estructural del observador.")
     st.stop()
 
-st.sidebar.title("🛠️ Auditoría")
-f_in = st.sidebar.number_input("Fase Eli", format="%.8f", step=1e-8, value=0.0)
-met = st.sidebar.radio("Modo:", ["#", "Reloj"])
+# Sidebar: Configuración del Hardware Autónomo
+st.sidebar.title("🛠️ Configuración de Fase")
+f_in = st.sidebar.number_input("Diferencial de Fase Eli", format="%.8f", step=1e-8, value=0.0)
+st.sidebar.markdown("---")
 
-mn, lbl = 0, ""
-if met == "Reloj":
-    f, h = st.sidebar.date_input("F", value=date(2026, 4, 16)), st.sidebar.time_input("H")
-    dt = datetime.combine(f, h).replace(tzinfo=timezone.utc)
+met = st.sidebar.radio("Modo de Búsqueda:", ["Poesía Continua #", "Reloj Temporal"])
+
+mn_final = 0
+lbl_time = ""
+
+if met == "Reloj Temporal":
+    st.sidebar.subheader("Coordenada Temporal")
+    f = st.sidebar.date_input("Fecha (Año/Mes/Día)", value=date(2026, 4, 16))
+    h = st.sidebar.time_input("Hora (24h:Min:Seg)")
+    ms = st.sidebar.number_input("Microsegundos (Binario)", min_value=0, max_value=999999, value=0)
+    
+    dt = datetime.combine(f, h).replace(microsecond=ms, tzinfo=timezone.utc)
     diff = dt - reloj.T0
-    u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000)
-    mn, lbl = int(u * reloj.E * (reloj.P ** 2)), dt.strftime('%d/%m/%Y %H:%M')
+    
+    # Conversión a microsegundos para precisión infinitesimal 
+    u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000) + Decimal(dt.microsecond)
+    mn_final = int(u * reloj.E * (reloj.P ** 2))
+    lbl_time = dt.strftime('%Y, %B, %d, %H:%M:%S') + f":{dt.microsecond:06d}"
 else:
-    try: mn = int(st.sidebar.text_input("ID:", "0"))
-    except: mn = 0
-    lbl = "Manual"
+    st.sidebar.subheader("Búsqueda por Identidad")
+    try:
+        mn_input = st.sidebar.text_input("Poesía Continua #:", "0")
+        mn_final = int(mn_input)
+    except:
+        mn_final = 0
+    lbl_time = "Sincronización Manual"
 
+# --- DESPLIEGUE FINAL (Reloj de Tinta Seca Definitivo) ---
 st.title("⏳ Reloj de Tinta Seca")
-versos = reloj.M0 if mn == 0 else reloj.desordenar(mn, f_in)
 
-st.markdown(f"""<div style="border:3px solid #1a5276;padding:30px;border-radius:20px;font-family:monospace;">
-{'<br>'.join(versos)}<hr><div style="text-align:right;"><b>ID: #{mn}</b><br><b>Fase: {f_in:.8f}</b></div></div>""", unsafe_allow_html=True)
+# Si la fase es correcta, el sistema revela M0 (Desentropía D) [cite: 14, 29]
+if mn_final == 0:
+    versos = reloj.M0
+else:
+    versos = reloj.desordenar(mn_final, f_in)
 
-if Decimal(str(f_in)) == ELI_NUMBER_MASTER: st.sidebar.success("✔️ ESTABLE")
-else: st.sidebar.warning("⚠️ DERIVA")
+# Interfaz estética: Marco de Comprobación Física [cite: 33]
+st.markdown(f"""
+<div style="border:3px solid #1a5276; padding:40px; border-radius:15px; background-color:#fdfefe; font-family:'Courier New', Courier, monospace; color:#1b2631;">
+    <div style="font-size:1.1em; line-height:1.6;">
+        {'<br>'.join(versos)}
+    </div>
+    <hr style="border:1px solid #1a5276;">
+    <div style="text-align:right; font-size:0.9em; color:#566573;">
+        <b>{lbl_time}</b><br>
+        <b>:Reloj de Tinta Seca: Poesía Continua #{mn_final}</b>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Validación de Estado de la Fase (Sólo visible en Auditoría)
+if Decimal(str(f_in)) == ELI_NUMBER_MASTER:
+    st.sidebar.success("✔️ ESTABLE (D)")
+else:
+    st.sidebar.warning("⚠️ DERIVA (Snat)")
