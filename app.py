@@ -62,13 +62,19 @@ reloj = RelojTinta()
 if 'nocturno' not in st.session_state: st.session_state['nocturno'] = False
 if 'auth' not in st.session_state: st.session_state['auth'] = False
 
-# Definición de paleta
+# Definición de colores
 if st.session_state['nocturno']:
     bg, txt, border, box = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
 else:
     bg, txt, border, box = "#FDFEFE", "#1B2631", "#1A5276", "#FF4B4B"
 
-# CSS Blindado
+# Inyección de CSS (Forzando tipografía y cuadrito rojo)
 st.markdown(f"""
-    <style>
-    @
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
+html, body, [class*="st-"] {{
+    font-family: 'Courier Prime', monospace !important;
+    background-color: {bg} !important;
+    color: {txt} !important;
+}}
+.poema-container {{
