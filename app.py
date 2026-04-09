@@ -71,7 +71,7 @@ if st.session_state['nocturno']:
 else:
     bg, txt, border, accent = "#FDFEFE", "#1B2631", "#1A5276", "#FF4B4B"
 
-# 5. CSS Aislado (Sistema Inmune a SyntaxError)
+# 5. CSS (Se inyecta usando format para evitar errores con las llaves {})
 css_code = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
@@ -90,7 +90,7 @@ html, body, [class*="st-"] {{
     white-space: nowrap;
     overflow: hidden;
 }}
-input[type="checkbox"], input[type="radio"] {{
+input[type="radio"] {{
     accent-color: {3} !important;
 }}
 </style>
@@ -99,65 +99,6 @@ st.markdown(css_code, unsafe_allow_html=True)
 
 # 6. Autenticación
 if not st.session_state['auth']:
-    st.markdown('<h1 style="text-align:center;">Sincronización de Identidad</h1>', unsafe_allow_html=True)
-    pw = st.text_input("Clave de Acceso:", type="password")
-    if st.button("Validar Trayectoria"):
-        if pw == CLAVE_CORRECTA:
-            st.session_state['auth'] = True
-            st.rerun()
-        else:
-            st.error("Identidad no reconocida.")
-    st.stop()
-
-# 7. SIDEBAR (Panel de Control)
-with st.sidebar:
-    st.markdown(f'<h2 style="color:{border};">Hardware Trayector</h2>', unsafe_allow_html=True)
-    
-    if st.button("🌓 Cambiar Modo"):
-        st.session_state['nocturno'] = not st.session_state['nocturno']
-        st.rerun()
-    
-    st.markdown("---")
-    ver_ui = st.checkbox("🔽 Mostrar Opciones", value=True)
-    
-    mn_final = 0
-    now = datetime.now(timezone.utc)
-    lbl_time = now.strftime('%Y, %B, %d, %H:%M:%S')
-
-    if ver_ui:
-        st.markdown("---")
-        # Selector de Modo (Radio Button)
-        metodo = st.radio(
-            "Dimensión de Búsqueda:",
-            ("Reloj Temporal", "Identificador de Poesía")
-        )
-        
-        st.markdown("---")
-
-        if metodo == "Identificador de Poesía":
-            st.write("### Búsqueda Manual")
-            mn_in = st.text_input("Ingresar ID de Poesía:", "0")
-            try:
-                mn_final = int(mn_in)
-            except:
-                mn_final = 0
-            lbl_time = "Estado: Selección Forzada"
-        else:
-            st.write("### Coordenada Temporal")
-            f = st.date_input("Fecha", value=date(2026, 4, 16))
-            h = st.time_input("Hora")
-            ms = st.number_input("Microsegundos", 0, 999999, 0)
-            
-            dt = datetime.combine(f, h).replace(microsecond=ms, tzinfo=timezone.utc)
-            diff = dt - reloj.T0
-            
-            # Cálculo de Momentum
-            u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000) + Decimal(dt.microsecond)
-            mn_final = int(u * reloj.E * (reloj.P ** 2))
-            lbl_time = dt.strftime('%Y, %B, %d, %H:%M:%S') + f":{dt.microsecond:06d}"
-
-# 8. CUERPO (Renderizado del Reloj)
-st.markdown('<h1 style="text-align:center;">Reloj de Tinta Seca</h1>', unsafe_allow_html=True)
-
-versos = reloj.M0 if mn_final == 0 else reloj.desordenar(mn_final)
-poema_html = '<br>'.join(
+    st.markdown('<h1 style="text-align:center;">Identidad</h1>', unsafe_allow_html=True)
+    pw = st.text_input("Clave:", type="password")
+    if st.
