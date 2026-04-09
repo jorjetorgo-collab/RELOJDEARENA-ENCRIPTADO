@@ -56,17 +56,15 @@ class RelojTinta:
 
 reloj = RelojTinta()
 
-# Gestión de Estados
 if 'nocturno' not in st.session_state: st.session_state['nocturno'] = False
 if 'auth' not in st.session_state: st.session_state['auth'] = False
 
-# Colores dinámicos
 if st.session_state['nocturno']:
     bg, txt, border = "#000000", "#FFFFFF", "#FF0000"
 else:
     bg, txt, border = "#FDFEFE", "#1B2631", "#1A5276"
 
-# Inyección CSS Reforzada
+# CSS Unificado
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
@@ -76,14 +74,10 @@ st.markdown(f"""
         background-color: {bg} !important;
         color: {txt} !important;
     }}
-    h1 {{
-        font-family: 'Courier Prime', monospace !important;
-        font-weight: bold !important;
-        color: {txt} !important;
-    }}
+    .stRadio > label {{ font-family: 'Courier Prime', monospace !important; }}
     .poema-container {{
         border: 2px solid {border};
-        padding: 40px;
+        padding: 45px;
         border-radius: 8px;
         background-color: {bg};
         width: 90%;
@@ -91,84 +85,6 @@ st.markdown(f"""
         white-space: nowrap;
         overflow: hidden;
     }}
-    .control-block {{
-        border: 1px solid {border};
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 10px;
-    }}
-    </style>
-""", unsafe_allow_html=True)
-
-# Autenticación
-if not st.session_state['auth']:
-    st.markdown(f'<h1 style="text-align:center;">Sincronización de Identidad</h1>', unsafe_allow_html=True)
-    pw = st.text_input("Clave:", type="password")
-    if st.button("Sincronizar"):
-        if pw == CLAVE_CORRECTA:
-            st.session_state['auth'] = True
-            st.rerun()
-        else: st.error("Error estructural.")
-    st.stop()
-
-# --- BARRA LATERAL (Hardware de Control) ---
-with st.sidebar:
-    st.markdown(f'<h2 style="color:{border}; margin-bottom:20px;">Hardware Trayector</h2>', unsafe_allow_html=True)
-    
-    # Botón Modo Nocturno
-    if st.button("🌓 Cambiar Modo"):
-        st.session_state['nocturno'] = not st.session_state['nocturno']
-        st.rerun()
-    
-    st.markdown("---")
-    
-    # Botón de flecha para colapsar la interfaz de búsqueda
-    mostrar_controles = st.checkbox("🔽 Mostrar Controles de Búsqueda", value=True)
-    
-    mn_final = 0
-    now = datetime.now(timezone.utc)
-    lbl_time = now.strftime('%Y, %B, %d, %H:%M:%S:%f')[:-3]
-
-    if mostrar_controles:
-        with st.container():
-            st.markdown(f'<div class="control-block">', unsafe_allow_html=True)
-            metodo = st.radio("Método:", ["Poesía Continua #", "Reloj Temporal"])
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        if metodo == "Reloj Temporal":
-            with st.container():
-                st.markdown(f'<div class="control-block">', unsafe_allow_html=True)
-                f = st.date_input("Fecha", value=date(2026, 4, 16))
-                h = st.time_input("Hora")
-                ms = st.number_input("Microsegundos", 0, 999999, 0)
-                dt = datetime.combine(f, h).replace(microsecond=ms, tzinfo=timezone.utc)
-                diff = dt - reloj.T0
-                u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000) + Decimal(dt.microsecond)
-                mn_final = int(u * reloj.E * (reloj.P ** 2))
-                lbl_time = dt.strftime('%Y, %B, %d, %H:%M:%S') + f":{dt.microsecond:06d}"
-                st.markdown('</div>', unsafe_allow_html=True)
-        else:
-            with st.container():
-                st.markdown(f'<div class="control-block">', unsafe_allow_html=True)
-                mn_input = st.text_input("ID Identidad:", "0")
-                try: mn_final = int(mn_input)
-                except: mn_final = 0
-                st.markdown('</div>', unsafe_allow_html=True)
-
-# --- CUERPO PRINCIPAL ---
-st.markdown(f'<h1 style="text-align:center; font-family:\'Courier Prime\', monospace !important;">Reloj de Tinta Seca</h1>', unsafe_allow_html=True)
-
-versos = reloj.M0 if mn_final == 0 else reloj.desordenar(mn_final)
-
-st.markdown(f"""
-<div class="poema-container">
-    <div style="font-size: 0.95vw; line-height: 2; font-family: 'Courier Prime', monospace !important;">
-        {'<br>'.join(versos)}
-    </div>
-    <hr style="border: 0.5px solid {border}; margin-top: 40px;">
-    <div style="text-align: right; font-size: 0.85em; opacity: 0.9; line-height: 1.6;">
-        {lbl_time}<br>
-        Reloj de Tinta Seca: Poesía Continua #{mn_final}
-    </div>
-</div>
-""", unsafe_allow_html=True)
+    /* Estilo para los bloques de la sidebar */
+    [data-testid="stSidebar"] {{
+        border-right: 1px solid {
