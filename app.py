@@ -70,7 +70,7 @@ if st.session_state['nocturno']:
 else:
     bg, txt, border, accent = "#FDFEFE", "#1B2631", "#1A5276", "#FF4B4B"
 
-# --- CSS AISLADO (Sin f-string para evitar SyntaxErrors) ---
+# --- CSS AISLADO (Format) ---
 css_template = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
@@ -98,31 +98,5 @@ st.markdown(css_template.format(bg, txt, border, accent), unsafe_allow_html=True
 
 # Autenticación
 if not st.session_state['auth']:
-    st.markdown('<h1 style="text-align:center; font-family:Courier Prime;">Identidad</h1>', unsafe_allow_html=True)
-    pw = st.text_input("Clave:", type="password")
-    if st.button("Sincronizar"):
-        if pw == CLAVE_CORRECTA:
-            st.session_state['auth'] = True
-            st.rerun()
-        else:
-            st.error("Inconsistencia.")
-    st.stop()
-
-# --- SIDEBAR ---
-with st.sidebar:
-    st.markdown(f'<h2 style="color:{border};">Hardware Trayector</h2>', unsafe_allow_html=True)
-    if st.button("🌓 Modo Nocturno"):
-        st.session_state['nocturno'] = not st.session_state['nocturno']
-        st.rerun()
-    
-    st.markdown("---")
-    ver_ui = st.checkbox("🔽 Mostrar Búsqueda", value=True)
-    
-    mn_final = 0
-    now = datetime.now(timezone.utc)
-    lbl_time = now.strftime('%Y, %B, %d, %H:%M:%S')
-
-    if ver_ui:
-        st.markdown("---")
-        # El interruptor táctico (Cuadrito Rojo)
-        modo_manual = st.checkbox("🔴 Modo Manual (ON) / Temporal
+    st.markdown('<h1 style="text-align:center;">Identidad</h1>', unsafe_allow_html=True)
+    pw = st.text_
