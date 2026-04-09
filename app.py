@@ -3,7 +3,7 @@ from datetime import datetime, timezone, date
 from decimal import Decimal, getcontext
 import random
 
-# Configuración de precisión infinitesimal
+# Configuración de precisión
 getcontext().prec = 150
 st.set_page_config(page_title="Reloj de Tinta Seca", layout="wide")
 
@@ -64,13 +64,65 @@ if 'nocturno' not in st.session_state:
 if 'auth' not in st.session_state:
     st.session_state['auth'] = False
 
-# Colores de interfaz
+# Definición de paleta
 if st.session_state['nocturno']:
     bg, txt, border, accent = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
 else:
     bg, txt, border, accent = "#FDFEFE", "#1B2631", "#1A5276", "#FF4B4B"
 
-# CSS Aislado
-css_style = f"""
+# --- CSS AISLADO (Sin f-string para evitar SyntaxErrors) ---
+css_template = """
 <style>
-@import url('
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
+html, body, [class*="st-"] {{
+    font-family: 'Courier Prime', monospace !important;
+    background-color: {0} !important;
+    color: {1} !important;
+}}
+.poema-box {{
+    border: 2px solid {2};
+    padding: 40px;
+    border-radius: 10px;
+    background-color: {0};
+    width: 92%;
+    margin: auto;
+    white-space: nowrap;
+    overflow: hidden;
+}}
+input[type="checkbox"] {{
+    accent-color: {3} !important;
+}}
+</style>
+"""
+st.markdown(css_template.format(bg, txt, border, accent), unsafe_allow_html=True)
+
+# Autenticación
+if not st.session_state['auth']:
+    st.markdown('<h1 style="text-align:center; font-family:Courier Prime;">Identidad</h1>', unsafe_allow_html=True)
+    pw = st.text_input("Clave:", type="password")
+    if st.button("Sincronizar"):
+        if pw == CLAVE_CORRECTA:
+            st.session_state['auth'] = True
+            st.rerun()
+        else:
+            st.error("Inconsistencia.")
+    st.stop()
+
+# --- SIDEBAR ---
+with st.sidebar:
+    st.markdown(f'<h2 style="color:{border};">Hardware Trayector</h2>', unsafe_allow_html=True)
+    if st.button("🌓 Modo Nocturno"):
+        st.session_state['nocturno'] = not st.session_state['nocturno']
+        st.rerun()
+    
+    st.markdown("---")
+    ver_ui = st.checkbox("🔽 Mostrar Búsqueda", value=True)
+    
+    mn_final = 0
+    now = datetime.now(timezone.utc)
+    lbl_time = now.strftime('%Y, %B, %d, %H:%M:%S')
+
+    if ver_ui:
+        st.markdown("---")
+        # El interruptor táctico (Cuadrito Rojo)
+        modo_manual = st.checkbox("🔴 Modo Manual (ON) / Temporal
