@@ -3,23 +3,21 @@ from datetime import datetime, timezone, date
 from decimal import Decimal, getcontext
 import random
 
-# 1. Configuración de Precisión
+# 1. PRECISIÓN INFINITESIMAL (Axioma Operativo)
 getcontext().prec = 150
 st.set_page_config(page_title="Reloj de Tinta Seca", layout="wide")
 
 CLAVE_CORRECTA = "Nandino2026"
 
-# 2. Carga de la Fase Eli
+# 2. CARGA DE FASE (ELI_MASTER como Trayector)
 try:
-    if "ELI_KEY" in st.secrets:
-        ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
-    else:
-        ELI_NUMBER_MASTER = Decimal("0")
+    ELI_MASTER = Decimal(st.secrets["ELI_KEY"]) if "ELI_KEY" in st.secrets else Decimal("0")
 except:
-    ELI_NUMBER_MASTER = Decimal("0")
+    ELI_MASTER = Decimal("0")
 
 class RelojTinta:
     def __init__(self):
+        # Momentum Natural (M0) - Identidad Invariante
         self.M0 = [
             "Con fuerza y bravura, con discreta amargura, porta una armadura que su alma tortura...",
             "Con ternura usurpa el espacio que el dolor, sin ella con completa soltura ocupa...",
@@ -52,45 +50,33 @@ class RelojTinta:
     def desordenar(self, mn):
         res = list(self.M0)
         for i in range(len(res) - 1, 0, -1):
-            random.seed(str(Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * ELI_NUMBER_MASTER))
+            random.seed(str(Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * ELI_MASTER))
             j = random.randint(0, i)
             res[i], res[j] = res[j], res[i]
         return res
 
 reloj = RelojTinta()
 
+# 3. SESIÓN Y COLORES (Determinismo Visual)
 if 'nocturno' not in st.session_state: st.session_state['nocturno'] = False
 if 'auth' not in st.session_state: st.session_state['auth'] = False
 
-# Colores
-if st.session_state['nocturno']:
-    bg, txt, border = "#000000", "#FFFFFF", "#FF0000"
-else:
-    bg, txt, border = "#FDFEFE", "#1B2631", "#1A5276"
+bg, txt, border = ("#000000", "#FFFFFF", "#FF0000") if st.session_state['nocturno'] else ("#FDFEFE", "#1B2631", "#1A5276")
 
-# CSS
+# 4. CSS (Estructura de la Observación)
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
-html, body, [class*="st-"] {{
-    font-family: 'Courier Prime', monospace !important;
-    background-color: {bg} !important;
-    color: {txt} !important;
-}}
+html, body, [class*="st-"] {{ font-family: 'Courier Prime', monospace !important; }}
 .poema-box {{
-    border: 2px solid {border};
-    padding: 40px;
-    border-radius: 10px;
-    background-color: {bg};
-    width: 92%;
-    margin: auto;
-    white-space: nowrap;
-    overflow: hidden;
+    border: 2px solid {border}; padding: 40px; border-radius: 10px;
+    background-color: {bg}; color: {txt}; width: 92%; margin: auto;
+    white-space: nowrap; overflow: hidden;
 }}
 </style>
 """, unsafe_allow_html=True)
 
-# Autenticación
+# 5. AUTENTICACIÓN
 if not st.session_state['auth']:
     st.markdown('<h1 style="text-align:center;">Identidad</h1>', unsafe_allow_html=True)
     pw = st.text_input("Clave:", type="password")
@@ -100,26 +86,22 @@ if not st.session_state['auth']:
             st.rerun()
     st.stop()
 
-# SIDEBAR
+# 6. SIDEBAR (El Trayector)
 with st.sidebar:
-    st.markdown(f'<h2 style="color:{border};">Trayector</h2>', unsafe_allow_html=True)
+    st.title("Hardware Trayector")
     if st.button("🌓 Modo"):
         st.session_state['nocturno'] = not st.session_state['nocturno']
         st.rerun()
     
     st.markdown("---")
-    metodo = st.radio("Dimensión:", ("Reloj Temporal", "Identificador"))
+    # Elección de Momentum (Marcadores)
+    metodo = st.radio("Dimensión:", ["Reloj Temporal", "Identificador Manual"])
     
-    now = datetime.now(timezone.utc)
-    # Inicialización del momentum para evitar vacío
-    mn_final = 1 
+    mn_final = Decimal("1")
+    lbl_time = ""
 
-    if metodo == "Identificador":
-        mn_in = st.text_input("ID:", value="1")
+    if metodo == "Identificador Manual":
+        mn_input = st.text_input("ID de Poesía:", value="1")
         try:
-            mn_final = int(mn_in)
-        except:
-            mn_final = 1
-        lbl_time = "Manual"
-    else:
-        f = st.date_input("Fecha", value=date(2026, 4,
+            mn_final = Decimal(mn_input)
+            lbl_time = "Búsqueda por Identificador"
