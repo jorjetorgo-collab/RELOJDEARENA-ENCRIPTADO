@@ -121,4 +121,33 @@ with st.sidebar:
                     mn_final = 0
         else:
             f_in = st.text_input("Fecha (AAAA-MM-DD):", placeholder="2026-04-16")
-            h_in = st.text_input("Hora (HH:MM):
+            h_in = st.text_input("Hora (HH:MM):", placeholder="00:00")
+            ms = st.number_input("µs (Microsegundos):", 0, 999999, 0)
+            
+            if f_in and h_in:
+                try:
+                    f = datetime.strptime(f_in, "%Y-%m-%d").date()
+                    h = datetime.strptime(h_in, "%H:%M").time()
+                    dt = datetime.combine(f, h).replace(microsecond=ms, tzinfo=timezone.utc)
+                    
+                    diff = dt - reloj.T0
+                    u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000) + Decimal(dt.microsecond)
+                    mn_final = int(u * reloj.E * (reloj.P ** 2))
+                    lbl_time = dt.strftime('%Y-%m-%d %H:%M:%S') + f":{dt.microsecond:06d}"
+                except ValueError:
+                    st.error("Formato incorrecto.")
+
+# 7. Main UI
+st.markdown('<h1 style="text-align:center;">Reloj de Tinta Seca</h1>', unsafe_allow_html=True)
+versos = reloj.M0 if mn_final == 0 else reloj.desordenar(mn_final)
+poema_html = '<br>'.join(versos)
+
+st.markdown(f"""
+<div class="poema-box">
+    <div style="font-size: 0.88vw; line-height: 2.1;">{poema_html}</div>
+    <hr>
+    <div style="text-align: right; font-size: 0.85em; opacity: 0.8;">
+        {lbl_time}<br>Poesía Continua #{mn_final}
+    </div>
+</div>
+""", unsafe_allow_html=True)
