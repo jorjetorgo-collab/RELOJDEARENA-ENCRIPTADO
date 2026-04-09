@@ -8,7 +8,7 @@ getcontext().prec = 150
 st.set_page_config(page_title="Reloj de Tinta Seca", layout="wide")
 CLAVE_CORRECTA = "Nandino2026"
 
-# 2. Carga de la Fase Eli
+# 2. Carga de la Fase Eli (Variable Maestra)
 try:
     ELI_NUMBER_MASTER = Decimal(st.secrets.get("ELI_KEY", "0"))
 except:
@@ -45,6 +45,15 @@ class RelojTinta:
         self.T0 = datetime(2026, 4, 16, 0, 0, 0, tzinfo=timezone.utc)
         self.E, self.P = Decimal('2.7182818284'), Decimal('1.6180339887')
 
+    def desordenar(self, mn, eli_val):
+        res = list(self.M0)
+        for i in range(len(res) - 1, 0, -1):
+            # Se inyecta eli_val directamente para evitar el AttributeError
+            random.seed(str(Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * eli_val))
+            j = random.randint(0, i)
+            res[i], res[j] = res[j], res[i]
+        return res
+
 reloj = RelojTinta()
 
 # 3. Gestión de Estado y Colores
@@ -53,7 +62,7 @@ if 'auth' not in st.session_state: st.session_state['auth'] = False
 
 bg, txt, brd = ("#000000", "#FFFFFF", "#FF0000") if st.session_state['nocturno'] else ("#FDFEFE", "#1B2631", "#1A5276")
 
-# 4. CSS Maestro (Con doble llave para evitar SyntaxError)
+# 4. CSS Maestro (Doble llave para evitar errores de formato)
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
@@ -79,8 +88,6 @@ input {{
     overflow-x: auto;
     white-space: nowrap;
 }}
-div[data-baseweb="radio"] div, div[data-baseweb="checkbox"] div {{ border-color: {brd} !important; }}
-input[type="radio"]:checked + div {{ background-color: {brd} !important; }}
 hr {{ border-top: 1px solid {brd} !important; opacity: 0.5; }}
 </style>
 """, unsafe_allow_html=True)
@@ -102,52 +109,4 @@ with st.sidebar:
     if st.button("🌓 Cambiar Modo"):
         st.session_state['nocturno'] = not st.session_state['nocturno']
         st.rerun()
-    st.markdown("---")
-    ver_ui = st.checkbox("🔽 Opciones", value=True)
-    
-    # Valores Predeterminados (Punto Cero)
-    mn_final = 0
-    lbl_time = reloj.T0.strftime('%Y-%m-%d %H:%M:%S') + ".000000"
-
-    if ver_ui:
-        metodo = st.radio("Dimensión:", ("Reloj Temporal", "Identificador"))
-        if metodo == "Identificador":
-            mn_in = st.text_input("ID (Escribir número):", "")
-            if mn_in:
-                try: 
-                    mn_final = int(mn_in)
-                    lbl_time = f"Referencia por ID: {mn_final}"
-                except: 
-                    mn_final = 0
-        else:
-            f_in = st.text_input("Fecha (AAAA-MM-DD):", placeholder="2026-04-16")
-            h_in = st.text_input("Hora (HH:MM):", placeholder="00:00")
-            ms = st.number_input("µs (Microsegundos):", 0, 999999, 0)
-            
-            if f_in and h_in:
-                try:
-                    f = datetime.strptime(f_in, "%Y-%m-%d").date()
-                    h = datetime.strptime(h_in, "%H:%M").time()
-                    dt = datetime.combine(f, h).replace(microsecond=ms, tzinfo=timezone.utc)
-                    
-                    diff = dt - reloj.T0
-                    u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000) + Decimal(dt.microsecond)
-                    mn_final = int(u * reloj.E * (reloj.P ** 2))
-                    lbl_time = dt.strftime('%Y-%m-%d %H:%M:%S') + f":{dt.microsecond:06d}"
-                except ValueError:
-                    st.error("Formato incorrecto.")
-
-# 7. Main UI
-st.markdown('<h1 style="text-align:center;">Reloj de Tinta Seca</h1>', unsafe_allow_html=True)
-versos = reloj.M0 if mn_final == 0 else reloj.desordenar(mn_final)
-poema_html = '<br>'.join(versos)
-
-st.markdown(f"""
-<div class="poema-box">
-    <div style="font-size: 0.88vw; line-height: 2.1;">{poema_html}</div>
-    <hr>
-    <div style="text-align: right; font-size: 0.85em; opacity: 0.8;">
-        {lbl_time}<br>Poesía Continua #{mn_final}
-    </div>
-</div>
-""", unsafe_allow_html=True)
+    st
