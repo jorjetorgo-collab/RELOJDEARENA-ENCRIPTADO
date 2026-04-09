@@ -62,35 +62,30 @@ reloj = RelojTinta()
 if 'nocturno' not in st.session_state: st.session_state['nocturno'] = False
 if 'auth' not in st.session_state: st.session_state['auth'] = False
 
-# Colores dinámicos
 if st.session_state['nocturno']:
     bg, txt, border = "#000000", "#FFFFFF", "#FF0000"
 else:
     bg, txt, border = "#FDFEFE", "#1B2631", "#1A5276"
 
-# CSS PROTEGIDO
-st.markdown(f"""
+# CSS Estático
+st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
-html, body, [class*="st-"] {{
+html, body, [class*="st-"] {
     font-family: 'Courier Prime', monospace !important;
-    background-color: {bg} !important;
-    color: {txt} !important;
-}}
-.poema-container {{
-    border: 2px solid {border};
+}
+.poema-container {
     padding: 45px;
     border-radius: 8px;
-    background-color: {bg};
     width: 90%;
     margin: auto;
     white-space: nowrap;
     overflow: hidden;
-}}
+}
 </style>
 """, unsafe_allow_html=True)
 
-# 6. Autenticación (Lógica Simplificada para evitar errores de corte)
+# 6. Autenticación
 if not st.session_state['auth']:
     st.markdown('<h1 style="text-align:center;">Identidad</h1>', unsafe_allow_html=True)
     pw = st.text_input("Clave:", type="password")
@@ -99,10 +94,10 @@ if not st.session_state['auth']:
             st.session_state['auth'] = True
             st.rerun()
         else:
-            st.error("Error estructural.")
+            st.error("Error.")
     st.stop()
 
-# 7. BARRA LATERAL (Con las Casillas de Marcador/Radio Buttons)
+# 7. BARRA LATERAL
 with st.sidebar:
     st.markdown(f'<h2 style="color:{border};">Hardware Trayector</h2>', unsafe_allow_html=True)
     if st.button("🌓 Modo"):
@@ -111,9 +106,9 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # LAS CASILLAS DE MARCADOR SOLICITADAS:
+    # CASILLAS DE MARCADOR (Círculos)
     metodo = st.radio(
-        "Modo de Búsqueda Activo:",
+        "Modo Activo:",
         ["Reloj Temporal", "Poesía Continua #"],
         index=0
     )
@@ -122,7 +117,7 @@ with st.sidebar:
     
     mn_final = 0
     now = datetime.now(timezone.utc)
-    lbl_time = now.strftime('%Y, %B, %d, %H:%M:%S')
+    lbl_time = now.strftime('%Y, %m, %d, %H:%M:%S')
 
     if metodo == "Reloj Temporal":
         f = st.date_input("Fecha", value=date(2026, 4, 16))
@@ -132,19 +127,3 @@ with st.sidebar:
         diff = dt - reloj.T0
         u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000) + Decimal(dt.microsecond)
         mn_final = int(u * reloj.E * (reloj.P ** 2))
-        lbl_time = dt.strftime('%Y, %m, %d, %H:%M:%S') + f":{dt.microsecond:06d}"
-    else:
-        id_in = st.text_input("ID #:", "0")
-        try:
-            mn_final = int(id_in)
-        except:
-            mn_final = 0
-        lbl_time = "Búsqueda por Identificador"
-
-# 8. CUERPO
-st.markdown('<h1 style="text-align:center;">Reloj de Tinta Seca</h1>', unsafe_allow_html=True)
-versos = reloj.M0 if mn_final == 0 else reloj.desordenar(mn_final)
-
-st.markdown(f"""
-<div class="poema-container">
-    <div style="font-size: 0.95vw; line-height
