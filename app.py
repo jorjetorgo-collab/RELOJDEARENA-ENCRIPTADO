@@ -73,4 +73,47 @@ if not st.session_state['auth']:
     st.stop()
 
 st.sidebar.title("🛠️ Trayector")
-met
+metodo = st.sidebar.radio("Navegación:", ["Poesía Continua #", "Reloj Temporal"])
+
+mn_final = 0
+lbl_time = ""
+
+if metodo == "Reloj Temporal":
+    st.sidebar.subheader("Coordenada")
+    f = st.sidebar.date_input("Fecha", value=date(2026, 4, 16))
+    h = st.sidebar.time_input("Hora")
+    ms = st.sidebar.number_input("Microsegundos (Binario)", min_value=0, max_value=999999, value=0)
+    
+    dt = datetime.combine(f, h).replace(microsecond=ms, tzinfo=timezone.utc)
+    diff = dt - reloj.T0
+    u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000) + Decimal(dt.microsecond)
+    mn_final = int(u * reloj.E * (reloj.P ** 2))
+    lbl_time = dt.strftime('%Y, %B, %d, %H:%M:%S') + f":{dt.microsecond:06d}"
+else:
+    try:
+        mn_input = st.sidebar.text_input("Poesía Continua #:", "0")
+        mn_final = int(mn_input)
+    except: 
+        mn_final = 0
+    lbl_time = "Sincronización Manual"
+
+# --- DESPLIEGUE ---
+st.title("⏳ Reloj de Tinta Seca")
+
+if mn_final == 0:
+    versos = reloj.M0
+else:
+    versos = reloj.desordenar(mn_final)
+
+st.markdown(f"""
+<div style="border:3px solid #1a5276; padding:40px; border-radius:15px; background-color:#fdfefe; font-family:'Courier New', Courier, monospace; color:#1b2631;">
+    <div style="font-size:1.1em; line-height:1.6;">
+        {'<br>'.join(versos)}
+    </div>
+    <hr style="border:1px solid #1a5276;">
+    <div style="text-align:right; font-size:0.9em; color:#566573;">
+        <b>{lbl_time}</b><br>
+        <b>Reloj de Tinta Seca: Poesía Continua #{mn_final}</b>
+    </div>
+</div>
+""", unsafe_allow_html=True)
