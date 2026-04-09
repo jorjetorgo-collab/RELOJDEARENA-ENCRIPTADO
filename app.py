@@ -56,39 +56,4 @@ class RelojTinta:
 reloj = RelojTinta()
 
 # 3. Gestión de Estado y Colores
-if 'nocturno' not in st.session_state: st.session_state['nocturno'] = False
-if 'auth' not in st.session_state: st.session_state['auth'] = False
-
-bg, txt, brd = ("#000000", "#FFFFFF", "#FF0000") if st.session_state['nocturno'] else ("#FDFEFE", "#1B2631", "#1A5276")
-
-# 4. CSS Maestro (Visibilidad total de inputs y bordes)
-st.markdown(f"""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
-[data-testid="stAppViewContainer"], [data-testid="stHeader"], [data-testid="stSidebar"], .stApp {{
-    background-color: {bg} !important;
-}}
-html, body, [class*="st-"], h1, h2, h3, p, label, span, div, input, button {{
-    font-family: 'Courier Prime', monospace !important;
-    color: {txt} !important;
-}}
-/* Estilo de cajas de texto manuales */
-div[data-baseweb="input"] {{
-    background-color: {bg} !important;
-    border: 1px solid {brd} !important;
-}}
-input {{
-    color: {txt} !important;
-}}
-.poema-box {{
-    border: 2px solid {brd}; 
-    padding: 35px; 
-    border-radius: 10px;
-    background-color: {bg}; 
-    width: 95%; 
-    margin: auto; 
-    overflow-x: auto;
-    white-space: nowrap;
-}}
-div[data-baseweb="radio"] div, div[data-baseweb="checkbox"] div {{ border-color: {brd} !important; }}
-input[type="radio"]:checked
+if 'nocturno' not in st.session_state: st.session_state['noct
