@@ -65,114 +65,15 @@ if 'nocturno' not in st.session_state:
 if 'auth' not in st.session_state:
     st.session_state['auth'] = False
 
-# 4. Paleta de Colores
+# 4. Paleta de Colores Homologada
 if st.session_state['nocturno']:
     bg, txt, border, accent = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
 else:
     bg, txt, border, accent = "#FDFEFE", "#1B2631", "#1A5276", "#1A5276"
 
-# 5. CSS Aislado (Corrección de tipografía y visibilidad)
-css_code = """
+# 5. CSS Homologado (Control total de fondo y tipografía)
+css_code = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
-html, body, [class*="st-"], h1, h2, h3, p, label {{
-    font-family: 'Courier Prime', monospace !important;
-    color: {1} !important;
-}}
-.stApp {{
-    background-color: {0} !important;
-}}
-.poema-box {{
-    border: 2px solid {2};
-    padding: 40px;
-    border-radius: 10px;
-    background-color: {0};
-    width: 92%;
-    margin: auto;
-    white-space: nowrap;
-    overflow: hidden;
-}}
-/* Visibilidad de los Radio Buttons y Checkbox */
-div[data-baseweb="radio"] div, div[data-baseweb="checkbox"] div {{
-    border-color: {2} !important;
-}}
-input[type="radio"]:checked + div {{
-    background-color: {3} !important;
-}}
-</style>
-""".format(bg, txt, border, accent)
-st.markdown(css_code, unsafe_allow_html=True)
 
-# 6. Autenticación
-if not st.session_state['auth']:
-    st.markdown('<h1 style="text-align:center;">Sincronización de Identidad</h1>', unsafe_allow_html=True)
-    pw = st.text_input("Clave de Acceso:", type="password")
-    if st.button("Validar Trayectoria"):
-        if pw == CLAVE_CORRECTA:
-            st.session_state['auth'] = True
-            st.rerun()
-        else:
-            st.error("Identidad no reconocida.")
-    st.stop()
-
-# 7. SIDEBAR (Hardware Trayector)
-with st.sidebar:
-    st.markdown(f'<h2 style="color:{border};">Hardware Trayector</h2>', unsafe_allow_html=True)
-    
-    if st.button("🌓 Cambiar Modo"):
-        st.session_state['nocturno'] = not st.session_state['nocturno']
-        st.rerun()
-    
-    st.markdown("---")
-    ver_ui = st.checkbox("🔽 Mostrar Opciones", value=True)
-    
-    mn_final = 0
-    now = datetime.now(timezone.utc)
-    lbl_time = now.strftime('%Y, %B, %d, %H:%M:%S')
-
-    if ver_ui:
-        st.markdown("---")
-        metodo = st.radio(
-            "Dimensión de Búsqueda:",
-            ("Reloj Temporal", "Identificador de Poesía")
-        )
-        st.markdown("---")
-
-        if metodo == "Identificador de Poesía":
-            st.write("### Búsqueda Manual")
-            mn_in = st.text_input("Ingresar ID de Poesía:", "1")
-            try:
-                mn_final = int(mn_in)
-            except:
-                mn_final = 1
-            lbl_time = "Estado: Selección Forzada"
-        else:
-            st.write("### Coordenada Temporal")
-            f = st.date_input("Fecha", value=date(2026, 4, 16))
-            h = st.time_input("Hora")
-            ms = st.number_input("Microsegundos", 0, 999999, 0)
-            
-            dt = datetime.combine(f, h).replace(microsecond=ms, tzinfo=timezone.utc)
-            diff = dt - reloj.T0
-            u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000) + Decimal(dt.microsecond)
-            mn_final = int(u * reloj.E * (reloj.P ** 2))
-            lbl_time = dt.strftime('%Y, %B, %d, %H:%M:%S') + f":{dt.microsecond:06d}"
-
-# 8. CUERPO (Renderizado del Reloj)
-st.markdown('<h1 style="text-align:center;">Reloj de Tinta Seca</h1>', unsafe_allow_html=True)
-
-versos = reloj.M0 if mn_final == 0 else reloj.desordenar(mn_final)
-poema_html = '<br>'.join(versos)
-
-st.markdown(f"""
-<div class="poema-box">
-    <div style="font-size: 0.95vw; line-height: 2.1;">
-        {poema_html}
-    </div>
-    <hr style="border: 0.5px solid {border}; margin-top: 40px;">
-    <div style="text-align: right; font-size: 0.85em; opacity: 0.8;">
-        {lbl_time}<br>
-        Reloj de Tinta Seca: Poesía Continua #{mn_final}
-    </div>
-</div>
-""", unsafe_allow_html=True)
+/* Homologación de fondos para cuerpo
