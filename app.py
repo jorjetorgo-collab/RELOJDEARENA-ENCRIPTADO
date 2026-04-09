@@ -30,7 +30,7 @@ class RelojTinta:
             "Estrella que guía en la bruma, la brújula que aparta las dudas, la que señala la ruta...",
             "La bruja del cuento que embruja a quien incauto su nombre conjura...",
             "La estela que veloz se fuga dejando heridas que no suturan...",
-            "La exquisita tortura de quien naufragaga en su mirada y encuentra lujuria...",
+            "La exquisita tortura de quien naufraga en su mirada y encuentra lujuria...",
             "Mancuerna de fosos, centellas gemelas que en el cosmos fulguran...",
             "Nada en el mundo está a su altura, ni el pulso de Miguel Ángel, ni la pluma de Neruda...",
             "No pregunten si el pecado valió la penuria, yo sería Sócrates si ella fuese cicuta...",
@@ -48,7 +48,6 @@ class RelojTinta:
     def desordenar(self, mn, eli_val):
         res = list(self.M0)
         for i in range(len(res) - 1, 0, -1):
-            # Se inyecta eli_val como argumento para evitar el AttributeError
             random.seed(str(Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * eli_val))
             j = random.randint(0, i)
             res[i], res[j] = res[j], res[i]
@@ -62,7 +61,7 @@ if 'auth' not in st.session_state: st.session_state['auth'] = False
 
 bg, txt, brd = ("#000000", "#FFFFFF", "#FF0000") if st.session_state['nocturno'] else ("#FDFEFE", "#1B2631", "#1A5276")
 
-# 4. CSS Maestro (Uso de doble llave {{ }} para evitar errores de f-string en CSS)
+# 4. CSS Maestro
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
@@ -88,8 +87,6 @@ input {{
     overflow-x: auto;
     white-space: nowrap;
 }}
-div[data-baseweb="radio"] div, div[data-baseweb="checkbox"] div {{ border-color: {brd} !important; }}
-input[type="radio"]:checked + div {{ background-color: {brd} !important; }}
 hr {{ border-top: 1px solid {brd} !important; opacity: 0.5; }}
 </style>
 """, unsafe_allow_html=True)
@@ -99,4 +96,13 @@ if not st.session_state['auth']:
     st.markdown('<h1 style="text-align:center;">Sincronización de Identidad</h1>', unsafe_allow_html=True)
     pw = st.text_input("Clave de Acceso:", type="password")
     if st.button("Validar Trayectoria"):
-        if pw == CLAVE_
+        if pw == CLAVE_CORRECTA:
+            st.session_state['auth'] = True
+            st.rerun()
+        else: st.error("Identidad no reconocida.")
+    st.stop()
+
+# 6. Sidebar
+with st.sidebar:
+    st.markdown(f'<h2 style="color:{brd};">Hardware Trayector</h2>', unsafe_allow_html=True)
+    if st.button("🌓 Cambiar Modo"):
