@@ -3,7 +3,7 @@ from datetime import datetime, timezone, timedelta, date
 from decimal import Decimal, getcontext
 import random
 
-# Configuración de resolución infinitesimal (Axioma Operativo I)
+# Configuración de resolución infinitesimal
 getcontext().prec = 150
 st.set_page_config(page_title="Reloj de Tinta Seca", layout="centered")
 
@@ -11,16 +11,12 @@ CLAVE_CORRECTA = "Nandino2026"
 
 # Carga de la Fase Eli desde Secretos
 try:
-    if "ELI_KEY" in st.secrets:
-        ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
-    else:
-        ELI_NUMBER_MASTER = Decimal("0")
+    ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"]) if "ELI_KEY" in st.secrets else Decimal("0")
 except:
     ELI_NUMBER_MASTER = Decimal("0")
 
 class RelojTinta:
     def __init__(self):
-        # M0 con gramática de continuidad (...)
         self.M0 = [
             "Con fuerza y bravura, con discreta amargura, porta una armadura que su alma tortura...",
             "Con ternura usurpa el espacio que el dolor, sin ella con completa soltura ocupa...",
@@ -60,82 +56,83 @@ class RelojTinta:
 
 reloj = RelojTinta()
 
-# Gestión de Modo Nocturno
+# Gestión de Colores y Modo Nocturno
 if 'nocturno' not in st.session_state: st.session_state['nocturno'] = False
-st.sidebar.title("🛠️ Configuración")
-if st.sidebar.button("Modo Nocturno / Diurno"):
-    st.session_state['nocturno'] = not st.session_state['nocturno']
 
-# Paleta de Colores
+# Paleta
 if st.session_state['nocturno']:
-    bg, txt, border = "#000000", "#FFFFFF", "#FF0000"  # Negro, Blanco, Rojo
+    bg, txt, border, accent = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
 else:
-    bg, txt, border = "#FDFEFE", "#1B2631", "#1A5276"  # Blanco, Negro, Azul
+    bg, txt, border, accent = "#FDFEFE", "#1B2631", "#1A5276", "#1A5276"
 
-# Estilos Globales
+# Inyección de CSS para forzar la tipografía en toda la app
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
+    
     html, body, [class*="st-"] {{
-        font-family: 'Courier Prime', monospace;
-        background-color: {bg};
-        color: {txt};
+        font-family: 'Courier Prime', monospace !important;
+        background-color: {bg} !important;
+        color: {txt} !important;
     }}
-    .main-title {{
-        font-family: 'Courier Prime', monospace;
-        text-align: center;
-        font-size: 2.5em;
-        padding-bottom: 20px;
-        color: {txt};
-    }}
+    .stTextInput>div>div>input {{ color: {txt} !important; font-family: 'Courier Prime' !important; }}
+    .stButton>button {{ border-color: {accent} !important; font-family: 'Courier Prime' !important; color: {txt} !important; }}
     </style>
 """, unsafe_allow_html=True)
 
 # Autenticación
 if 'auth' not in st.session_state: st.session_state['auth'] = False
 if not st.session_state['auth']:
-    st.markdown('<h1 class="main-title">Sincronización de Identidad</h1>', unsafe_allow_html=True)
+    st.markdown(f'<h1 style="text-align:center; font-family:\'Courier Prime\'">Sincronización de Identidad</h1>', unsafe_allow_html=True)
     pw = st.text_input("Clave de Acceso:", type="password")
-    if st.button("Entrar"):
+    if st.button("Sincronizar"):
         if pw == CLAVE_CORRECTA:
             st.session_state['auth'] = True
             st.rerun()
-        else: st.error("Incertidumbre estructural.")
+        else: st.error("Incertidumbre detectada.")
     st.stop()
 
-# Navegación
-metodo = st.sidebar.radio("Trayector:", ["Poesía Continua #", "Reloj Temporal"])
-mn_final = 0
-lbl_time = ""
+# --- BARRA LATERAL (Panel de Control) ---
+with st.sidebar:
+    st.markdown(f'<h3 style="color:{accent}">Panel del Trayector</h3>', unsafe_allow_html=True)
+    if st.button("🌓 Cambiar Modo"):
+        st.session_state['nocturno'] = not st.session_state['nocturno']
+        st.rerun()
+    
+    st.markdown("---")
+    metodo = st.radio("Modo de Búsqueda:", ["Poesía Continua #", "Reloj Temporal"])
+    
+    mn_final = 0
+    lbl_time = ""
 
-if metodo == "Reloj Temporal":
-    f = st.sidebar.date_input("Fecha", value=date(2026, 4, 16))
-    h = st.sidebar.time_input("Hora")
-    ms = st.sidebar.number_input("Microsegundos", min_value=0, max_value=999999, value=0)
-    dt = datetime.combine(f, h).replace(microsecond=ms, tzinfo=timezone.utc)
-    diff = dt - reloj.T0
-    u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000) + Decimal(dt.microsecond)
-    mn_final = int(u * reloj.E * (reloj.P ** 2))
-    lbl_time = dt.strftime('%Y, %B, %d, %H:%M:%S') + f":{dt.microsecond:06d}"
-else:
-    try:
-        mn_input = st.sidebar.text_input("Poesía Continua #:", "0")
-        mn_final = int(mn_input)
-    except: mn_final = 0
-    lbl_time = "Sincronización Manual"
+    if metodo == "Reloj Temporal":
+        f = st.date_input("Fecha", value=date(2026, 4, 16))
+        h = st.time_input("Hora")
+        ms = st.number_input("Microsegundos", 0, 999999, 0)
+        dt = datetime.combine(f, h).replace(microsecond=ms, tzinfo=timezone.utc)
+        diff = dt - reloj.T0
+        u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000) + Decimal(dt.microsecond)
+        mn_final = int(u * reloj.E * (reloj.P ** 2))
+        lbl_time = dt.strftime('%Y, %B, %d, %H:%M:%S') + f":{dt.microsecond:06d}"
+    else:
+        mn_input = st.text_input("Poesía Continua #:", "0")
+        try: mn_final = int(mn_input)
+        except: mn_final = 0
+        lbl_time = "Sincronización Manual"
 
-# Despliegue Principal
-st.markdown('<h1 class="main-title">Reloj de Tinta Seca</h1>', unsafe_allow_html=True)
+# --- CUERPO PRINCIPAL ---
+st.markdown(f'<h1 style="text-align:center; font-family:\'Courier Prime\'; color:{txt}">Reloj de Tinta Seca</h1>', unsafe_allow_html=True)
 
 versos = reloj.M0 if mn_final == 0 else reloj.desordenar(mn_final)
 
+# Caja del Poema
 st.markdown(f"""
-<div style="border:2px solid {border}; padding:35px; border-radius:10px; background-color:{bg}; color:{txt}; font-family:'Courier Prime', monospace;">
-    <div style="font-size:1.05em; line-height:1.7;">
+<div style="border:2px solid {border}; padding:40px; border-radius:10px; background-color:{bg}; color:{txt}; font-family:'Courier Prime', monospace; margin-top:20px;">
+    <div style="font-size:1.1em; line-height:1.8; margin-bottom: 40px;">
         {'<br>'.join(versos)}
     </div>
-    <hr style="border:0.5px solid {border}; margin-top:30px;">
-    <div style="text-align:right; font-size:0.85em; opacity:0.8;">
+    <hr style="border:0.5px solid {border};">
+    <div style="text-align:right; font-size:0.9em; line-height:1.5; opacity:0.9;">
         {lbl_time}<br>
         Reloj de Tinta Seca: Poesía Continua #{mn_final}
     </div>
