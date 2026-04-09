@@ -9,7 +9,7 @@ st.set_page_config(page_title="Reloj de Tinta Seca", layout="wide")
 
 CLAVE_CORRECTA = "Nandino2026"
 
-# 2. Carga de la Fase Eli
+# 2. Carga de la Fase Eli (Invariante estructural)
 try:
     if "ELI_KEY" in st.secrets:
         ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
@@ -53,39 +53,4 @@ class RelojTinta:
         res = list(self.M0)
         for i in range(len(res) - 1, 0, -1):
             random.seed(str(Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * ELI_NUMBER_MASTER))
-            j = random.randint(0, i)
-            res[i], res[j] = res[j], res[i]
-        return res
-
-reloj = RelojTinta()
-
-# 3. Gestión de Estado
-if 'nocturno' not in st.session_state:
-    st.session_state['nocturno'] = False
-if 'auth' not in st.session_state:
-    st.session_state['auth'] = False
-
-# 4. Paleta de Colores
-if st.session_state['nocturno']:
-    bg, txt, border, accent = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
-else:
-    bg, txt, border, accent = "#FDFEFE", "#1B2631", "#1A5276", "#FF4B4B"
-
-# 5. CSS Aislado
-css_code = """
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
-html, body, [class*="st-"] {{
-    font-family: 'Courier Prime', monospace !important;
-    background-color: {0} !important;
-    color: {1} !important;
-}}
-.poema-box {{
-    border: 2px solid {2};
-    padding: 40px;
-    border-radius: 10px;
-    background-color: {0};
-    width: 92%;
-    margin: auto;
-    white-space: nowrap;
-    overflow
+            j = random.randint
