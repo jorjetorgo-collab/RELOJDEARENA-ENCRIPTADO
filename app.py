@@ -59,11 +59,4 @@ reloj = RelojTinta()
 if 'nocturno' not in st.session_state: st.session_state['nocturno'] = False
 if 'auth' not in st.session_state: st.session_state['auth'] = False
 
-bg, txt, brd = ("#000000", "#FFFFFF", "#FF0000") if st.session_state['nocturno'] else ("#FDFEFE", "#1B2631", "#1A5276")
-
-# 4. CSS Maestro
-st.markdown(f"""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
-[data-testid="stAppViewContainer"], [data-testid="stHeader"], [data-testid="stSidebar"], .stApp {{
-    background-color: {
+bg, txt, brd = ("#000000", "#FFFFFF", "#FF0000") if st.session_state['nocturno'] else ("#FDFEFE", "#1B
