@@ -3,21 +3,23 @@ from datetime import datetime, timezone, date
 from decimal import Decimal, getcontext
 import random
 
-# 1. PRECISIÓN INFINITESIMAL (Axioma Operativo)
+# 1. Configuración de Precisión y Página
 getcontext().prec = 150
 st.set_page_config(page_title="Reloj de Tinta Seca", layout="wide")
 
 CLAVE_CORRECTA = "Nandino2026"
 
-# 2. CARGA DE FASE (ELI_MASTER como Trayector)
+# 2. Carga de la Fase Eli
 try:
-    ELI_MASTER = Decimal(st.secrets["ELI_KEY"]) if "ELI_KEY" in st.secrets else Decimal("0")
+    if "ELI_KEY" in st.secrets:
+        ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
+    else:
+        ELI_NUMBER_MASTER = Decimal("0")
 except:
-    ELI_MASTER = Decimal("0")
+    ELI_NUMBER_MASTER = Decimal("0")
 
 class RelojTinta:
     def __init__(self):
-        # Momentum Natural (M0) - Identidad Invariante
         self.M0 = [
             "Con fuerza y bravura, con discreta amargura, porta una armadura que su alma tortura...",
             "Con ternura usurpa el espacio que el dolor, sin ella con completa soltura ocupa...",
@@ -50,58 +52,122 @@ class RelojTinta:
     def desordenar(self, mn):
         res = list(self.M0)
         for i in range(len(res) - 1, 0, -1):
-            random.seed(str(Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * ELI_MASTER))
+            random.seed(str(Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * ELI_NUMBER_MASTER))
             j = random.randint(0, i)
             res[i], res[j] = res[j], res[i]
         return res
 
 reloj = RelojTinta()
 
-# 3. SESIÓN Y COLORES (Determinismo Visual)
-if 'nocturno' not in st.session_state: st.session_state['nocturno'] = False
-if 'auth' not in st.session_state: st.session_state['auth'] = False
+# 3. Gestión de Estado
+if 'nocturno' not in st.session_state:
+    st.session_state['nocturno'] = False
+if 'auth' not in st.session_state:
+    st.session_state['auth'] = False
 
-bg, txt, border = ("#000000", "#FFFFFF", "#FF0000") if st.session_state['nocturno'] else ("#FDFEFE", "#1B2631", "#1A5276")
+# 4. Paleta de Colores
+if st.session_state['nocturno']:
+    bg, txt, border, accent = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
+else:
+    bg, txt, border, accent = "#FDFEFE", "#1B2631", "#1A5276", "#FF4B4B"
 
-# 4. CSS (Estructura de la Observación)
-st.markdown(f"""
+# 5. CSS
+css_code = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
-html, body, [class*="st-"] {{ font-family: 'Courier Prime', monospace !important; }}
+html, body, [class*="st-"] {{
+    font-family: 'Courier Prime', monospace !important;
+    background-color: {0} !important;
+    color: {1} !important;
+}}
 .poema-box {{
-    border: 2px solid {border}; padding: 40px; border-radius: 10px;
-    background-color: {bg}; color: {txt}; width: 92%; margin: auto;
-    white-space: nowrap; overflow: hidden;
+    border: 2px solid {2};
+    padding: 40px;
+    border-radius: 10px;
+    background-color: {0};
+    width: 92%;
+    margin: auto;
+    white-space: nowrap;
+    overflow: hidden;
+}}
+input[type="checkbox"], input[type="radio"] {{
+    accent-color: {3} !important;
 }}
 </style>
-""", unsafe_allow_html=True)
+""".format(bg, txt, border, accent)
+st.markdown(css_code, unsafe_allow_html=True)
 
-# 5. AUTENTICACIÓN
+# 6. Autenticación
 if not st.session_state['auth']:
-    st.markdown('<h1 style="text-align:center;">Identidad</h1>', unsafe_allow_html=True)
-    pw = st.text_input("Clave:", type="password")
-    if st.button("Sincronizar"):
+    st.markdown('<h1 style="text-align:center;">Sincronización de Identidad</h1>', unsafe_allow_html=True)
+    pw = st.text_input("Clave de Acceso:", type="password")
+    if st.button("Validar Trayectoria"):
         if pw == CLAVE_CORRECTA:
             st.session_state['auth'] = True
             st.rerun()
+        else:
+            st.error("Identidad no reconocida.")
     st.stop()
 
-# 6. SIDEBAR (El Trayector)
+# 7. SIDEBAR
 with st.sidebar:
-    st.title("Hardware Trayector")
-    if st.button("🌓 Modo"):
+    st.markdown(f'<h2 style="color:{border};">Hardware Trayector</h2>', unsafe_allow_html=True)
+    
+    if st.button("🌓 Cambiar Modo"):
         st.session_state['nocturno'] = not st.session_state['nocturno']
         st.rerun()
     
     st.markdown("---")
-    # Elección de Momentum (Marcadores)
-    metodo = st.radio("Dimensión:", ["Reloj Temporal", "Identificador Manual"])
+    ver_ui = st.checkbox("🔽 Mostrar Opciones", value=True)
     
-    mn_final = Decimal("1")
-    lbl_time = ""
+    mn_final = 0
+    now = datetime.now(timezone.utc)
+    lbl_time = now.strftime('%Y, %B, %d, %H:%M:%S')
 
-    if metodo == "Identificador Manual":
-        mn_input = st.text_input("ID de Poesía:", value="1")
-        try:
-            mn_final = Decimal(mn_input)
+    if ver_ui:
+        st.markdown("---")
+        # Selector de Modo (Marcadores)
+        metodo = st.radio(
+            "Dimensión de Búsqueda:",
+            ("Reloj Temporal", "Identificador de Poesía")
+        )
+        
+        st.markdown("---")
+
+        if metodo == "Identificador de Poesía":
+            mn_in = st.text_input("Ingresar ID de Poesía:", "1")
+            try:
+                mn_final = int(mn_in)
+            except:
+                mn_final = 1
             lbl_time = "Búsqueda por Identificador"
+        else:
+            f = st.date_input("Fecha", value=date(2026, 4, 16))
+            h = st.time_input("Hora")
+            ms = st.number_input("Microsegundos", 0, 999999, 0)
+            
+            dt = datetime.combine(f, h).replace(microsecond=ms, tzinfo=timezone.utc)
+            diff = dt - reloj.T0
+            u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000) + Decimal(dt.microsecond)
+            mn_final = int(u * reloj.E * (reloj.P ** 2))
+            lbl_time = dt.strftime('%Y, %B, %d, %H:%M:%S') + f":{dt.microsecond:06d}"
+
+# 8. CUERPO
+st.markdown('<h1 style="text-align:center;">Reloj de Tinta Seca</h1>', unsafe_allow_html=True)
+
+# Lógica de versos
+versos = reloj.desordenar(mn_final) if mn_final != 0 else reloj.M0
+poema_html = '<br>'.join(versos)
+
+st.markdown(f"""
+<div class="poema-box">
+    <div style="font-size: 0.95vw; line-height: 2.1;">
+        {poema_html}
+    </div>
+    <hr style="border: 0.5px solid {border}; margin-top: 40px;">
+    <div style="text-align: right; font-size: 0.85em; opacity: 0.8;">
+        {lbl_time}<br>
+        Reloj de Tinta Seca: Poesía Continua #{mn_final}
+    </div>
+</div>
+""", unsafe_allow_html=True)
