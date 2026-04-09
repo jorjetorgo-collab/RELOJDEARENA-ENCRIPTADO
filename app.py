@@ -3,13 +3,13 @@ from datetime import datetime, timezone, date
 from decimal import Decimal, getcontext
 import random
 
-# 1. Configuración de Precisión y Página
+# 1. Configuración de Precisión
 getcontext().prec = 150
 st.set_page_config(page_title="Reloj de Tinta Seca", layout="wide")
 
 CLAVE_CORRECTA = "Nandino2026"
 
-# 2. Carga de la Fase Eli (Invariante estructural)
+# 2. Carga de la Fase Eli
 try:
     if "ELI_KEY" in st.secrets:
         ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
@@ -53,4 +53,73 @@ class RelojTinta:
         res = list(self.M0)
         for i in range(len(res) - 1, 0, -1):
             random.seed(str(Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * ELI_NUMBER_MASTER))
-            j = random.randint
+            j = random.randint(0, i)
+            res[i], res[j] = res[j], res[i]
+        return res
+
+reloj = RelojTinta()
+
+if 'nocturno' not in st.session_state: st.session_state['nocturno'] = False
+if 'auth' not in st.session_state: st.session_state['auth'] = False
+
+# Colores
+if st.session_state['nocturno']:
+    bg, txt, border = "#000000", "#FFFFFF", "#FF0000"
+else:
+    bg, txt, border = "#FDFEFE", "#1B2631", "#1A5276"
+
+# CSS
+st.markdown(f"""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
+html, body, [class*="st-"] {{
+    font-family: 'Courier Prime', monospace !important;
+    background-color: {bg} !important;
+    color: {txt} !important;
+}}
+.poema-box {{
+    border: 2px solid {border};
+    padding: 40px;
+    border-radius: 10px;
+    background-color: {bg};
+    width: 92%;
+    margin: auto;
+    white-space: nowrap;
+    overflow: hidden;
+}}
+</style>
+""", unsafe_allow_html=True)
+
+# Autenticación
+if not st.session_state['auth']:
+    st.markdown('<h1 style="text-align:center;">Identidad</h1>', unsafe_allow_html=True)
+    pw = st.text_input("Clave:", type="password")
+    if st.button("Sincronizar"):
+        if pw == CLAVE_CORRECTA:
+            st.session_state['auth'] = True
+            st.rerun()
+    st.stop()
+
+# SIDEBAR
+with st.sidebar:
+    st.markdown(f'<h2 style="color:{border};">Trayector</h2>', unsafe_allow_html=True)
+    if st.button("🌓 Modo"):
+        st.session_state['nocturno'] = not st.session_state['nocturno']
+        st.rerun()
+    
+    st.markdown("---")
+    metodo = st.radio("Dimensión:", ("Reloj Temporal", "Identificador"))
+    
+    now = datetime.now(timezone.utc)
+    # Inicialización del momentum para evitar vacío
+    mn_final = 1 
+
+    if metodo == "Identificador":
+        mn_in = st.text_input("ID:", value="1")
+        try:
+            mn_final = int(mn_in)
+        except:
+            mn_final = 1
+        lbl_time = "Manual"
+    else:
+        f = st.date_input("Fecha", value=date(2026, 4,
