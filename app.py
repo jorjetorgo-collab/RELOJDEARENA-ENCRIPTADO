@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone, date, time
 from decimal import Decimal, getcontext
 import random
 
@@ -30,7 +30,7 @@ class RelojTinta:
             "Estrella que guía en la bruma, la brújula que aparta las dudas, la que señala la ruta...",
             "La bruja del cuento que embruja a quien incauto su nombre conjura...",
             "La estela que veloz se fuga dejando heridas que no suturan...",
-            "La exquisita tortura de quien naufraga en su mirada y encuentra lujuria...",
+            "La exquisita tortura de quien naufragaga en su mirada y encuentra lujuria...",
             "Mancuerna de fosos, centellas gemelas que en el cosmos fulguran...",
             "Nada en el mundo está a su altura, ni el pulso de Miguel Ángel, ni la pluma de Neruda...",
             "No pregunten si el pecado valió la penuria, yo sería Sócrates si ella fuese cicuta...",
@@ -61,7 +61,7 @@ if 'auth' not in st.session_state: st.session_state['auth'] = False
 
 bg, txt, brd = ("#000000", "#FFFFFF", "#FF0000") if st.session_state['nocturno'] else ("#FDFEFE", "#1B2631", "#1A5276")
 
-# 4. CSS Maestro Ajustado (Forzar un solo renglón)
+# 4. CSS Maestro
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
@@ -79,8 +79,8 @@ html, body, [class*="st-"], h1, h2, h3, p, label, span, div, input, button {{
     background-color: {bg}; 
     width: 95%; 
     margin: auto; 
-    overflow-x: auto; /* Permite scroll horizontal si la pantalla es muy pequeña */
-    white-space: nowrap; /* CRÍTICO: Evita que el texto salte de línea */
+    overflow-x: auto;
+    white-space: nowrap;
 }}
 div[data-baseweb="radio"] div, div[data-baseweb="checkbox"] div {{ border-color: {brd} !important; }}
 input[type="radio"]:checked + div {{ background-color: {brd} !important; }}
@@ -107,36 +107,23 @@ with st.sidebar:
         st.rerun()
     st.markdown("---")
     ver_ui = st.checkbox("🔽 Opciones", value=True)
-    mn_final, now = 0, datetime.now(timezone.utc)
-    lbl_time = now.strftime('%Y, %B, %d, %H:%M:%S')
+    mn_final = 0
+    lbl_time = "Esperando Coordenada..."
 
     if ver_ui:
         metodo = st.radio("Dimensión:", ("Reloj Temporal", "Identificador"))
         if metodo == "Identificador":
-            mn_in = st.text_input("ID:", "1")
-            try: mn_final = int(mn_in)
+            mn_in = st.text_input("ID (Ingresar manualmente):", "")
+            try: 
+                if mn_in: mn_final = int(mn_in)
             except: mn_final = 1
             lbl_time = "Selección Manual"
         else:
-            f, h = st.date_input("Fecha", date(2026, 4, 16)), st.time_input("Hora")
-            ms = st.number_input("µs", 0, 999999, 0)
-            dt = datetime.combine(f, h).replace(microsecond=ms, tzinfo=timezone.utc)
-            diff = dt - reloj.T0
-            u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000) + Decimal(dt.microsecond)
-            mn_final = int(u * reloj.E * (reloj.P ** 2))
-            lbl_time = dt.strftime('%Y-%m-%d %H:%M:%S') + f":{dt.microsecond:06d}"
-
-# 7. Main UI (Ajuste de tamaño de fuente para legibilidad)
-st.markdown('<h1 style="text-align:center;">Reloj de Tinta Seca</h1>', unsafe_allow_html=True)
-versos = reloj.M0 if mn_final == 0 else reloj.desordenar(mn_final)
-poema_html = '<br>'.join(versos)
-
-st.markdown(f"""
-<div class="poema-box">
-    <div style="font-size: 0.88vw; line-height: 2.1;">{poema_html}</div>
-    <hr>
-    <div style="text-align: right; font-size: 0.85em; opacity: 0.8;">
-        {lbl_time}<br>Poesía Continua #{mn_final}
-    </div>
-</div>
-""", unsafe_allow_html=True)
+            # Campos vacíos o neutrales para forzar escritura manual
+            f_in = st.text_input("Fecha (YYYY-MM-DD):", placeholder="Ej: 2026-04-16")
+            h_in = st.text_input("Hora (HH:MM):", placeholder="Ej: 12:00")
+            ms = st.number_input("µs (Microsegundos):", 0, 999999, 0)
+            
+            if f_in and h_in:
+                try:
+                    f = datetime.strptime(f_in, '%Y-%m-%d').date()
