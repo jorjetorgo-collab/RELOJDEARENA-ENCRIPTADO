@@ -56,4 +56,5 @@ class RelojTinta:
 reloj = RelojTinta()
 
 # 3. Gestión de Estado y Colores
-if 'nocturno' not in st.session_state: st.session_state['noct
+if 'nocturno' not in st.session_state: st.session_state['nocturno'] = False
+if '
