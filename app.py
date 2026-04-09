@@ -11,7 +11,10 @@ CLAVE_CORRECTA = "Nandino2026"
 
 # Carga de la Fase Eli desde Secretos
 try:
-    ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"]) if "ELI_KEY" in st.secrets else Decimal("0")
+    if "ELI_KEY" in st.secrets:
+        ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
+    else:
+        ELI_NUMBER_MASTER = Decimal("0")
 except:
     ELI_NUMBER_MASTER = Decimal("0")
 
@@ -59,39 +62,13 @@ reloj = RelojTinta()
 if 'nocturno' not in st.session_state: st.session_state['nocturno'] = False
 if 'auth' not in st.session_state: st.session_state['auth'] = False
 
+# Definición de paleta
 if st.session_state['nocturno']:
-    bg, txt, border, box_color = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
+    bg, txt, border, box = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
 else:
-    bg, txt, border, box_color = "#FDFEFE", "#1B2631", "#1A5276", "#FF4B4B"
+    bg, txt, border, box = "#FDFEFE", "#1B2631", "#1A5276", "#FF4B4B"
 
-# Inyección de CSS corregida
+# CSS Blindado
 st.markdown(f"""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
-    
-    html, body, [class*="st-"] {{
-        font-family: 'Courier Prime', monospace !important;
-        background-color: {bg} !important;
-        color: {txt} !important;
-    }}
-    .poema-container {{
-        border: 2px solid {border};
-        padding: 45px;
-        border-radius: 8px;
-        background-color: {bg};
-        width: 90%;
-        margin: auto;
-        white-space: nowrap;
-        overflow: hidden;
-    }}
-    /* Personalización del cuadrito rojo (checkbox) */
-    .stCheckbox > label > div[data-key="stCheckbox"] {{
-        background-color: {box_color} !important;
-        border-color: {box_color} !important;
-    }}
-    </style>
-""", unsafe_allow_html=True)
-
-# Autenticación
-if not st.session_state['auth']:
-    st.markdown(f'<h1
+    @
