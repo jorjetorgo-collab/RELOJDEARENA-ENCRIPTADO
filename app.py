@@ -64,14 +64,14 @@ if 'nocturno' not in st.session_state:
 if 'auth' not in st.session_state:
     st.session_state['auth'] = False
 
-# --- AJUSTE DE COLORES (Línea 72 Corregida) ---
+# Colores de la interfaz
 if st.session_state['nocturno']:
     bg, txt, border, accent = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
 else:
     bg, txt, border, accent = "#FDFEFE", "#1B2631", "#1A5276", "#FF4B4B"
 
-# CSS con doble llave para evitar conflictos con f-strings
-st.markdown(f"""
+# --- INYECCIÓN DE CSS (Limpiada de f-strings peligrosos) ---
+css_style = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
 html, body, [class*="st-"] {{
@@ -80,3 +80,67 @@ html, body, [class*="st-"] {{
     color: {txt} !important;
 }}
 .poema-box {{
+    border: 2px solid {border};
+    padding: 40px;
+    border-radius: 10px;
+    background-color: {bg};
+    width: 92%;
+    margin: auto;
+    white-space: nowrap;
+    overflow: hidden;
+}}
+input[type="checkbox"] {{
+    accent-color: {accent} !important;
+}}
+</style>
+"""
+st.markdown(css_style, unsafe_allow_html=True)
+
+# Autenticación
+if not st.session_state['auth']:
+    st.markdown('<h1 style="text-align:center;">Sincronización de Identidad</h1>', unsafe_allow_html=True)
+    pw = st.text_input("Clave:", type="password")
+    if st.button("Sincronizar"):
+        if pw == CLAVE_CORRECTA:
+            st.session_state['auth'] = True
+            st.rerun()
+        else:
+            st.error("Error estructural.")
+    st.stop()
+
+# --- SIDEBAR ---
+with st.sidebar:
+    st.markdown(f'<h2 style="color:{border};">Hardware Trayector</h2>', unsafe_allow_html=True)
+    if st.button("🌓 Modo Nocturno"):
+        st.session_state['nocturno'] = not st.session_state['nocturno']
+        st.rerun()
+    
+    st.markdown("---")
+    ver_ui = st.checkbox("🔽 Mostrar Búsqueda", value=True)
+    
+    mn_final = 0
+    now = datetime.now(timezone.utc)
+    lbl_time = now.strftime('%Y, %B, %d, %H:%M:%S')
+
+    if ver_ui:
+        st.markdown("---")
+        # El cuadrito rojo de alternancia
+        modo_manual = st.checkbox("🔴 Modo Manual (ON) / Tiempo (OFF)", value=False)
+        
+        if modo_manual:
+            st.write("### Identificador")
+            mn_in = st.text_input("Ingresar # Poesía:", "0")
+            try:
+                mn_final = int(mn_in)
+            except:
+                mn_final = 0
+        else:
+            st.write("### Reloj Temporal")
+            f = st.date_input("Fecha", value=date(2026, 4, 16))
+            h = st.time_input("Hora")
+            ms = st.number_input("Microsegundos", 0, 999999, 0)
+            dt = datetime.combine(f, h).replace(microsecond=ms, tzinfo=timezone.utc)
+            diff = dt - reloj.T0
+            u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000) + Decimal(dt.microsecond)
+            mn_final = int(u * reloj.E * (reloj.P ** 2))
+            lbl_time = dt.strftime('%Y, %B, %d
