@@ -65,59 +65,21 @@ bg, txt, brd = ("#000000", "#FFFFFF", "#FF0000") if st.session_state['nocturno']
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
-[data-testid="stAppViewContainer"], [data-testid="stHeader"], [data-testid="stSidebar"], .stApp {{
-    background-color: {bg} !important;
-}}
+[data-testid="stAppViewContainer"], [data-testid="stHeader"], [data-testid="stSidebar"], .stApp {{ background-color: {bg} !important; }}
 html, body, [class*="st-"], h1, h2, h3, p, label, span, div, input, button {{
     font-family: 'Courier Prime', monospace !important;
     color: {txt} !important;
 }}
-input {{
-    background-color: {bg} !important;
-    border: 1px solid {brd} !important;
-    color: {txt} !important;
-}}
+input {{ background-color: {bg} !important; border: 1px solid {brd} !important; color: {txt} !important; }}
 .poema-box {{
-    border: 2px solid {brd}; 
-    padding: 35px; 
-    border-radius: 10px;
-    background-color: {bg}; 
-    width: 95%; 
-    margin: auto; 
-    overflow-x: auto;
-    white-space: nowrap;
+    border: 2px solid {brd}; padding: 35px; border-radius: 10px;
+    background-color: {bg}; width: 95%; margin: auto; 
+    overflow-x: auto; white-space: nowrap;
 }}
-div[data-baseweb="radio"] div, div[data-baseweb="checkbox"] div {{ border-color: {brd} !important; }}
-input[type="radio"]:checked + div {{ background-color: {brd} !important; }}
 hr {{ border-top: 1px solid {brd} !important; opacity: 0.5; }}
 </style>
 """, unsafe_allow_html=True)
 
 # 5. Autenticación
 if not st.session_state['auth']:
-    st.markdown('<h1 style="text-align:center;">Sincronización de Identidad</h1>', unsafe_allow_html=True)
-    pw = st.text_input("Clave de Acceso:", type="password")
-    if st.button("Validar Trayectoria"):
-        if pw == CLAVE_CORRECTA:
-            st.session_state['auth'] = True
-            st.rerun()
-        else: st.error("Identidad no reconocida.")
-    st.stop()
-
-# 6. Sidebar
-with st.sidebar:
-    st.markdown(f'<h2 style="color:{brd};">Hardware Trayector</h2>', unsafe_allow_html=True)
-    if st.button("🌓 Cambiar Modo"):
-        st.session_state['nocturno'] = not st.session_state['nocturno']
-        st.rerun()
-    st.markdown("---")
-    ver_ui = st.checkbox("🔽 Opciones", value=True)
-    
-    # Inicialización predeterminada
-    mn_final = 0
-    lbl_time = reloj.T0.strftime('%Y-%m-%d %H:%M:%S') + ".000000"
-
-    if ver_ui:
-        metodo = st.radio("Dimensión:", ("Reloj Temporal", "Identificador"))
-        if metodo == "Identificador":
-            mn
+    st.markdown('<h1 style="text-align:center;">S
