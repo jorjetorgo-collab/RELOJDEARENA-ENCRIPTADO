@@ -3,17 +3,20 @@ from datetime import datetime, timezone, date
 from decimal import Decimal, getcontext
 import random
 
-# 1. Configuración de precisión
+# 1. Configuración de Precisión y Página
 getcontext().prec = 150
 st.set_page_config(page_title="Reloj de Tinta Seca", layout="wide")
 
 CLAVE_CORRECTA = "Nandino2026"
 
-# 2. Fase Eli
+# 2. Carga de la Fase Eli
 try:
-    ELI_MASTER = Decimal(st.secrets["ELI_KEY"]) if "ELI_KEY" in st.secrets else Decimal("0")
+    if "ELI_KEY" in st.secrets:
+        ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
+    else:
+        ELI_NUMBER_MASTER = Decimal("0")
 except:
-    ELI_MASTER = Decimal("0")
+    ELI_NUMBER_MASTER = Decimal("0")
 
 class RelojTinta:
     def __init__(self):
@@ -49,101 +52,20 @@ class RelojTinta:
     def desordenar(self, mn):
         res = list(self.M0)
         for i in range(len(res) - 1, 0, -1):
-            random.seed(str(Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * ELI_MASTER))
+            random.seed(str(Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * ELI_NUMBER_MASTER))
             j = random.randint(0, i)
             res[i], res[j] = res[j], res[i]
         return res
 
 reloj = RelojTinta()
 
-if 'nocturno' not in st.session_state: st.session_state['nocturno'] = False
-if 'auth' not in st.session_state: st.session_state['auth'] = False
+# 3. Gestión de Estado
+if 'nocturno' not in st.session_state:
+    st.session_state['nocturno'] = False
+if 'auth' not in st.session_state:
+    st.session_state['auth'] = False
 
-# Colores
+# 4. Paleta de Colores
 if st.session_state['nocturno']:
-    bg, txt, border = "#000000", "#FFFFFF", "#FF0000"
+    bg, txt, border, accent = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
 else:
-    bg, txt, border = "#FDFEFE", "#1B2631", "#1A5276"
-
-# 3. CSS (Independiente)
-st.markdown(f"""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
-html, body, [class*="st-"] {{
-    font-family: 'Courier Prime', monospace !important;
-    background-color: {bg} !important;
-    color: {txt} !important;
-}}
-.poema-container {{
-    border: 2px solid {border};
-    padding: 45px;
-    border-radius: 8px;
-    background-color: {bg};
-    width: 90%;
-    margin: auto;
-    white-space: nowrap;
-    overflow: hidden;
-}}
-</style>
-""", unsafe_allow_html=True)
-
-# 4. Login
-if not st.session_state['auth']:
-    st.markdown('<h1 style="text-align:center;">Sincronización</h1>', unsafe_allow_html=True)
-    pw = st.text_input("Clave:", type="password")
-    if st.button("Entrar"):
-        if pw == CLAVE_CORRECTA:
-            st.session_state['auth'] = True
-            st.rerun()
-    st.stop()
-
-# 5. Sidebar
-with st.sidebar:
-    st.markdown(f'<h2 style="color:{border};">Hardware Trayector</h2>', unsafe_allow_html=True)
-    if st.button("🌓 Modo Nocturno"):
-        st.session_state['nocturno'] = not st.session_state['nocturno']
-        st.rerun()
-    
-    st.markdown("---")
-    metodo = st.radio("Trayector Activo:", ["Reloj Temporal", "Poesía Continua #"])
-    st.markdown("---")
-    
-    mn_final = 0
-    now = datetime.now(timezone.utc)
-    lbl_time = now.strftime('%Y, %m, %d, %H:%M:%S')
-
-    if metodo == "Reloj Temporal":
-        f = st.date_input("Fecha", value=date(2026, 4, 16))
-        h = st.time_input("Hora")
-        ms = st.number_input("Microsegundos", 0, 999999, 0)
-        dt = datetime.combine(f, h).replace(microsecond=ms, tzinfo=timezone.utc)
-        diff = dt - reloj.T0
-        u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000) + Decimal(dt.microsecond)
-        mn_final = int(u * reloj.E * (reloj.P ** 2))
-        lbl_time = dt.strftime('%Y, %m, %d, %H:%M:%S') + f":{dt.microsecond:06d}"
-    else:
-        id_input = st.text_input("Ingresar ID:", value="1")
-        try:
-            mn_final = int(id_input)
-        except:
-            mn_final = 1
-        lbl_time = "Búsqueda por Identificador"
-
-# 6. Renderizado
-st.markdown('<h1 style="text-align:center;">Reloj de Tinta Seca</h1>', unsafe_allow_html=True)
-
-versos_list = reloj.desordenar(mn_final)
-poema_body = "<br>".join(versos_list)
-
-st.markdown(f"""
-<div class="poema-container">
-    <div style="font-size: 0.95vw; line-height: 2.1;">
-        {poema_body}
-    </div>
-    <hr style="border: 0.5px solid {border}; margin-top: 40px;">
-    <div style="text-align: right; font-size: 0.85em; opacity: 0.9;">
-        {lbl_time}<br>
-        Reloj de Tinta Seca: Poesía Continua #{mn_final}
-    </div>
-</div>
-""", unsafe_allow_html=True)
