@@ -6,15 +6,11 @@ import random
 # 1. Configuración de Precisión y Página
 getcontext().prec = 150
 st.set_page_config(page_title="Reloj de Tinta Seca", layout="wide")
-
 CLAVE_CORRECTA = "Nandino2026"
 
 # 2. Carga de la Fase Eli
 try:
-    if "ELI_KEY" in st.secrets:
-        ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
-    else:
-        ELI_NUMBER_MASTER = Decimal("0")
+    ELI_NUMBER_MASTER = Decimal(st.secrets.get("ELI_KEY", "0"))
 except:
     ELI_NUMBER_MASTER = Decimal("0")
 
@@ -40,17 +36,4 @@ class RelojTinta:
             "No pregunten si el pecado valió la penuria, yo sería Sócrates si ella fuese cicuta...",
             "Por más que huya y se oculta, no hay fuga de lo que con fuego en el alma se incuba...",
             "Si es baile es finura y estructura, áurea cuando es pintura, dura si se habla de literatura...",
-            "Si sus labios mi nombre murmuran, si algún día me conjura, que veloz mi alma a ella acuda...",
-            "Su rara realeza de heroica figura, divina belleza de humilde postura...",
-            "Sus pisadas tal vez sean diminutas, pero donde pisa los cielos se inmutan...",
-            "Un canto para cada desvelo de la luna, un soneto del amor que jamás se consuma...",
-            "Yo la amaba y no me importaba ser su puta, sin derechos ni disputas..."
-        ]
-        self.T0 = datetime(2026, 4, 16, 0, 0, 0, tzinfo=timezone.utc)
-        self.E, self.P = Decimal('2.7182818284'), Decimal('1.6180339887')
-
-    def desordenar(self, mn):
-        res = list(self.M0)
-        for i in range(len(res) - 1, 0, -1):
-            random.seed(str(Decimal(str(mn + i)) * self.E * (self.P ** (i + 5)) * ELI_NUMBER_MASTER))
-            j = random.randint(0, i)
+            "Si sus labios mi nombre
