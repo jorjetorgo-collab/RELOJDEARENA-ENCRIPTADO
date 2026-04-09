@@ -3,18 +3,15 @@ from datetime import datetime, timezone, date
 from decimal import Decimal, getcontext
 import random
 
-# Configuración de resolución infinitesimal
+# Configuración de precisión
 getcontext().prec = 150
 st.set_page_config(page_title="Reloj de Tinta Seca", layout="wide")
 
 CLAVE_CORRECTA = "Nandino2026"
 
-# Carga de la Fase Eli desde Secretos
+# Carga de la Fase Eli
 try:
-    if "ELI_KEY" in st.secrets:
-        ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"])
-    else:
-        ELI_NUMBER_MASTER = Decimal("0")
+    ELI_NUMBER_MASTER = Decimal(st.secrets["ELI_KEY"]) if "ELI_KEY" in st.secrets else Decimal("0")
 except:
     ELI_NUMBER_MASTER = Decimal("0")
 
@@ -59,22 +56,11 @@ class RelojTinta:
 
 reloj = RelojTinta()
 
+# Gestión de Estado Nocturno
 if 'nocturno' not in st.session_state: st.session_state['nocturno'] = False
 if 'auth' not in st.session_state: st.session_state['auth'] = False
 
-# Definición de colores
+# Paleta de colores
 if st.session_state['nocturno']:
-    bg, txt, border, box = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
-else:
-    bg, txt, border, box = "#FDFEFE", "#1B2631", "#1A5276", "#FF4B4B"
-
-# Inyección de CSS (Forzando tipografía y cuadrito rojo)
-st.markdown(f"""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
-html, body, [class*="st-"] {{
-    font-family: 'Courier Prime', monospace !important;
-    background-color: {bg} !important;
-    color: {txt} !important;
-}}
-.poema-container {{
+    bg, txt, border, accent = "#000000", "#FFFFFF", "#FF0000", "#FF0000"
+else
