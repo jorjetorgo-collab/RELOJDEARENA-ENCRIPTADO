@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import datetime, timezone, date, time
+from datetime import datetime, timezone, date, time, timedelta
 from decimal import Decimal, getcontext
 import random
 
@@ -61,7 +61,7 @@ if 'auth' not in st.session_state: st.session_state['auth'] = False
 
 bg, txt, brd = ("#000000", "#FFFFFF", "#FF0000") if st.session_state['nocturno'] else ("#FDFEFE", "#1B2631", "#1A5276")
 
-# 4. CSS Maestro (Mantenemos toda tu configuración visual intacta)
+# 4. CSS Maestro
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
@@ -113,49 +113,11 @@ with st.sidebar:
     st.markdown("---")
     ver_ui = st.checkbox("🔽 Opciones", value=True)
     
-    # VALORES INICIALES POR DEFECTO (16 de Abril 2026)
+    # Inicialización predeterminada
     mn_final = 0
     lbl_time = reloj.T0.strftime('%Y-%m-%d %H:%M:%S') + ".000000"
 
     if ver_ui:
         metodo = st.radio("Dimensión:", ("Reloj Temporal", "Identificador"))
         if metodo == "Identificador":
-            mn_in = st.text_input("ID (Escribir número):", "")
-            if mn_in:
-                try: 
-                    mn_final = int(mn_in)
-                    lbl_time = f"Selección Manual - ID: {mn_final}"
-                except: 
-                    mn_final = 0
-        else:
-            f_in = st.text_input("Fecha (AAAA-MM-DD):", placeholder="Ej: 2026-04-16")
-            h_in = st.text_input("Hora (HH:MM):", placeholder="Ej: 00:00")
-            ms = st.number_input("µs (Microsegundos):", 0, 999999, 0)
-            
-            if f_in and h_in:
-                try:
-                    f = datetime.strptime(f_in, "%Y-%m-%d").date()
-                    h = datetime.strptime(h_in, "%H:%M").time()
-                    dt = datetime.combine(f, h).replace(microsecond=ms, tzinfo=timezone.utc)
-                    
-                    diff = dt - reloj.T0
-                    u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000) + Decimal(dt.microsecond)
-                    mn_final = int(u * reloj.E * (reloj.P ** 2))
-                    lbl_time = dt.strftime('%Y-%m-%d %H:%M:%S') + f":{dt.microsecond:06d}"
-                except ValueError:
-                    st.sidebar.warning("Formato pendiente...") # Mensaje discreto en el sidebar
-
-# 7. Main UI
-st.markdown('<h1 style="text-align:center;">Reloj de Tinta Seca</h1>', unsafe_allow_html=True)
-versos = reloj.M0 if mn_final == 0 else reloj.desordenar(mn_final)
-poema_html = '<br>'.join(versos)
-
-st.markdown(f"""
-<div class="poema-box">
-    <div style="font-size: 0.88vw; line-height: 2.1;">{poema_html}</div>
-    <hr>
-    <div style="text-align: right; font-size: 0.85em; opacity: 0.8;">
-        {lbl_time}<br>Poesía Continua #{mn_final}
-    </div>
-</div>
-""", unsafe_allow_html=True)
+            mn
