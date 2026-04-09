@@ -61,7 +61,7 @@ if 'auth' not in st.session_state: st.session_state['auth'] = False
 
 bg, txt, brd = ("#000000", "#FFFFFF", "#FF0000") if st.session_state['nocturno'] else ("#FDFEFE", "#1B2631", "#1A5276")
 
-# 4. CSS Maestro (Blindado para visibilidad total en sidebar y app)
+# 4. CSS Maestro Ajustado (Forzar un solo renglón)
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
@@ -73,8 +73,14 @@ html, body, [class*="st-"], h1, h2, h3, p, label, span, div, input, button {{
     color: {txt} !important;
 }}
 .poema-box {{
-    border: 2px solid {brd}; padding: 40px; border-radius: 10px;
-    background-color: {bg}; width: 92%; margin: auto; overflow: hidden;
+    border: 2px solid {brd}; 
+    padding: 35px; 
+    border-radius: 10px;
+    background-color: {bg}; 
+    width: 95%; 
+    margin: auto; 
+    overflow-x: auto; /* Permite scroll horizontal si la pantalla es muy pequeña */
+    white-space: nowrap; /* CRÍTICO: Evita que el texto salte de línea */
 }}
 div[data-baseweb="radio"] div, div[data-baseweb="checkbox"] div {{ border-color: {brd} !important; }}
 input[type="radio"]:checked + div {{ background-color: {brd} !important; }}
@@ -120,14 +126,14 @@ with st.sidebar:
             mn_final = int(u * reloj.E * (reloj.P ** 2))
             lbl_time = dt.strftime('%Y-%m-%d %H:%M:%S') + f":{dt.microsecond:06d}"
 
-# 7. Main UI
+# 7. Main UI (Ajuste de tamaño de fuente para legibilidad)
 st.markdown('<h1 style="text-align:center;">Reloj de Tinta Seca</h1>', unsafe_allow_html=True)
 versos = reloj.M0 if mn_final == 0 else reloj.desordenar(mn_final)
 poema_html = '<br>'.join(versos)
 
 st.markdown(f"""
 <div class="poema-box">
-    <div style="font-size: 0.95vw; line-height: 2.1;">{poema_html}</div>
+    <div style="font-size: 0.88vw; line-height: 2.1;">{poema_html}</div>
     <hr>
     <div style="text-align: right; font-size: 0.85em; opacity: 0.8;">
         {lbl_time}<br>Poesía Continua #{mn_final}
