@@ -61,7 +61,7 @@ if 'auth' not in st.session_state: st.session_state['auth'] = False
 
 bg, txt, brd = ("#000000", "#FFFFFF", "#FF0000") if st.session_state['nocturno'] else ("#FDFEFE", "#1B2631", "#1A5276")
 
-# 4. CSS Maestro (Forzar visibilidad de inputs en modo nocturno)
+# 4. CSS Maestro (Visibilidad total de inputs y bordes)
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
@@ -72,10 +72,12 @@ html, body, [class*="st-"], h1, h2, h3, p, label, span, div, input, button {{
     font-family: 'Courier Prime', monospace !important;
     color: {txt} !important;
 }}
-/* Forzar que los bordes y textos de los inputs sean visibles en el fondo negro */
-input {{
+/* Estilo de cajas de texto manuales */
+div[data-baseweb="input"] {{
     background-color: {bg} !important;
     border: 1px solid {brd} !important;
+}}
+input {{
     color: {txt} !important;
 }}
 .poema-box {{
@@ -89,71 +91,4 @@ input {{
     white-space: nowrap;
 }}
 div[data-baseweb="radio"] div, div[data-baseweb="checkbox"] div {{ border-color: {brd} !important; }}
-input[type="radio"]:checked + div {{ background-color: {brd} !important; }}
-hr {{ border-top: 1px solid {brd} !important; opacity: 0.5; }}
-</style>
-""", unsafe_allow_html=True)
-
-# 5. Autenticación
-if not st.session_state['auth']:
-    st.markdown('<h1 style="text-align:center;">Sincronización de Identidad</h1>', unsafe_allow_html=True)
-    pw = st.text_input("Clave de Acceso:", type="password")
-    if st.button("Validar Trayectoria"):
-        if pw == CLAVE_CORRECTA:
-            st.session_state['auth'] = True
-            st.rerun()
-        else: st.error("Identidad no reconocida.")
-    st.stop()
-
-# 6. Sidebar
-with st.sidebar:
-    st.markdown(f'<h2 style="color:{brd};">Hardware Trayector</h2>', unsafe_allow_html=True)
-    if st.button("🌓 Cambiar Modo"):
-        st.session_state['nocturno'] = not st.session_state['nocturno']
-        st.rerun()
-    st.markdown("---")
-    ver_ui = st.checkbox("🔽 Opciones", value=True)
-    mn_final = 0
-    lbl_time = "Esperando Entrada..."
-
-    if ver_ui:
-        metodo = st.radio("Dimensión:", ("Reloj Temporal", "Identificador"))
-        if metodo == "Identificador":
-            mn_in = st.text_input("ID (Escribir número):", "")
-            if mn_in:
-                try: mn_final = int(mn_in)
-                except: mn_final = 1
-            lbl_time = "Selección Manual"
-        else:
-            # Reemplazo de date_input y time_input por text_input para evitar predeterminados y bloques de 15 min
-            f_in = st.text_input("Fecha (AAAA-MM-DD):", placeholder="Ej: 2026-04-16")
-            h_in = st.text_input("Hora (HH:MM):", placeholder="Ej: 14:30")
-            ms = st.number_input("µs (Microsegundos):", 0, 999999, 0)
-            
-            if f_in and h_in:
-                try:
-                    f = datetime.strptime(f_in, "%Y-%m-%d").date()
-                    h = datetime.strptime(h_in, "%H:%M").time()
-                    dt = datetime.combine(f, h).replace(microsecond=ms, tzinfo=timezone.utc)
-                    
-                    diff = dt - reloj.T0
-                    u = (Decimal(diff.days)*86400000000) + (Decimal(diff.seconds)*1000000) + Decimal(dt.microsecond)
-                    mn_final = int(u * reloj.E * (reloj.P ** 2))
-                    lbl_time = dt.strftime('%Y-%m-%d %H:%M:%S') + f":{dt.microsecond:06d}"
-                except ValueError:
-                    st.error("Formato de fecha u hora incorrecto.")
-
-# 7. Main UI
-st.markdown('<h1 style="text-align:center;">Reloj de Tinta Seca</h1>', unsafe_allow_html=True)
-versos = reloj.M0 if mn_final == 0 else reloj.desordenar(mn_final)
-poema_html = '<br>'.join(versos)
-
-st.markdown(f"""
-<div class="poema-box">
-    <div style="font-size: 0.88vw; line-height: 2.1;">{poema_html}</div>
-    <hr>
-    <div style="text-align: right; font-size: 0.85em; opacity: 0.8;">
-        {lbl_time}<br>Poesía Continua #{mn_final}
-    </div>
-</div>
-""", unsafe_allow_html=True)
+input[type="radio"]:checked
